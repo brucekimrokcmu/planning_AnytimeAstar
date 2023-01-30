@@ -14,7 +14,6 @@
 #define	CURR_TIME               prhs[4]
 #define	COLLISION_THRESH        prhs[5]
 
-
 /* Output Arguments */
 #define	ACTION_OUT              plhs[0]
 
@@ -31,6 +30,7 @@
 #endif
 
 #define NUMOFDIRS 8
+
 
 static void planner(
         double*	map,
@@ -51,41 +51,99 @@ static void planner(
     int dX[NUMOFDIRS] = {-1, -1, -1,  0,  0,  1, 1, 1};
     int dY[NUMOFDIRS] = {-1,  0,  1, -1,  1, -1, 0, 1};
     
+    int goalposeX = (int) target_traj[target_steps-1];
+    int goalposeY = (int) target_traj[target_steps-1+target_steps];
     // for now greedily move towards the final target position,
     // but this is where you can put your planner
 
-    int goalposeX = (int) target_traj[target_steps-1];
-    int goalposeY = (int) target_traj[target_steps-1+target_steps];
-    // printf("robot: %d %d;\n", robotposeX, robotposeY);
-    // printf("goal: %d %d;\n", goalposeX, goalposeY);
+    //  B: to make goalpose dynamic w.r.t time
+    // int goalposeX = (int) target_traj[curr_time-1];
+    // int goalposeY = (int) target_traj[curr_time-1+target_steps];
 
     int bestX = 0, bestY = 0; // robot will not move if greedy action leads to collision
     double olddisttotarget = (double)sqrt(((robotposeX-goalposeX)*(robotposeX-goalposeX) + (robotposeY-goalposeY)*(robotposeY-goalposeY)));
     double disttotarget;
+
+
+
+    /*
+    1. ConstructGraph - Implicit "represented as a 2D Array?" 
+
+
+    2. Initialize g-values and heurisitcs for relevant states
+    3. ComputePath(graph)
     
+    
+    */ 
+
+
+    for(int dir = 0; dir < NUMOFDIRS; dir++)
+    {
+        int newx = robotposeX + dX[dir];
+        int newy = robotposeY + dY[dir];
+
+        if (newx >= 1 && newx <= x_size && newy >= 1 && newy <= y_size)
+        {
+            if (((int)map[GETMAPINDEX(newx,newy,x_size,y_size)] >= 0) && ((int)map[GETMAPINDEX(newx,newy,x_size,y_size)] < collision_thresh))  //if free
+            {
+                disttotarget = (double)sqrt(((newx-goalposeX)*(newx-goalposeX) + (newy-goalposeY)*(newy-goalposeY)));
+                if(disttotarget < olddisttotarget)
+                {
+                    olddisttotarget = disttotarget;
+                    bestX = dX[dir];
+                    bestY = dY[dir];
+                }
+            }
+        }
+    }
+
     /*
     Pseudocode of A*
     
+
+    // represent the map into a graph --> to get 's'
+
     OPEN = {s_start};
     CLOSED = {};
 
-
-    while(s_goal is not expanded && OPEN!=0) //s_goal is not in the CLOSED list
+    while(s_goal is not expanded && OPEN!=0) //i.e. s_goal(=goalpose) is not in the CLOSED list
     { 
         remove s with the smallest [f(s)=g(s)+h(s)] from OPEN;
         insert s into CLOSED;
+
         for every successor s' of s such that s' not in CLOSED;
             if g(s') > g(s) + c(s, s')
                 g(s') = g(s) + c(s, s')
                 insert s' into OPEN;
+    
     } 
+
+    */
+
+
+   // 3. publish action(solution)
+    robotposeX = robotposeX + bestX;
+    robotposeY = robotposeY + bestY;
+    action_ptr[0] = robotposeX;
+    action_ptr[1] = robotposeY;
+    
+    return;
+}
+
+    /*
     
     Questions
+
+    0. How do I define state?
+        2 dimension - x, y 
+        goalposeX, goalposeY  
 
     1. What data structure and search algorithm are needed for OPEN & CLOSED list? 
         To address this question, what are the requirements of the data structure? 
         The data structure should be ordered.
         
+        priority queue? 
+
         What search algorithm do I need to implement or use? 
         to find the min f(s) from the OPEN list or s_goal in the CLOSED list,
         binary tree? sort? 
@@ -108,33 +166,6 @@ static void planner(
     */
 
 
-
-    for(int dir = 0; dir < NUMOFDIRS; dir++)
-    {
-        int newx = robotposeX + dX[dir];
-        int newy = robotposeY + dY[dir];
-
-        if (newx >= 1 && newx <= x_size && newy >= 1 && newy <= y_size)
-        {
-            if (((int)map[GETMAPINDEX(newx,newy,x_size,y_size)] >= 0) && ((int)map[GETMAPINDEX(newx,newy,x_size,y_size)] < collision_thresh))  //if free
-            {
-                disttotarget = (double)sqrt(((newx-goalposeX)*(newx-goalposeX) + (newy-goalposeY)*(newy-goalposeY)));
-                if(disttotarget < olddisttotarget)
-                {
-                    olddisttotarget = disttotarget;
-                    bestX = dX[dir];
-                    bestY = dY[dir];
-                }
-            }
-        }
-    }
-    robotposeX = robotposeX + bestX;
-    robotposeY = robotposeY + bestY;
-    action_ptr[0] = robotposeX;
-    action_ptr[1] = robotposeY;
-    
-    return;
-}
 
 // prhs contains input parameters (4):
 // 1st is matrix with all the obstacles
