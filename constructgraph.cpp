@@ -16,12 +16,15 @@ ConstructGraph::ConstructGraph(
     target_steps(target_steps), curr_time(curr_time)
 {};
 
+
+
+
 // heuristics as an argument needed
-std::vector<int> make_small_graph(state state, //?
+std::vector<ConstructGraph::Node> ConstructGraph::make_small_graph(Node n,
     const double* map, const int collision_thresh, const int x_size, const int y_size,
     int robotposeX, int robotposeY, const int target_steps, int curr_time)
 {
-    std::vector<int> small_graph; // return an array of sturcture 
+    std::vector<ConstructGraph::Node> small_graph; // return an array of sturcture 
 
     int dX[NUMOFDIRS] = {-1, -1, -1,  0,  0,  1, 1, 1};
     int dY[NUMOFDIRS] = {-1,  0,  1, -1,  1, -1, 0, 1};

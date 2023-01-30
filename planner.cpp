@@ -69,7 +69,6 @@ static void planner(
     /*
     1. ConstructGraph - Implicit "represented as a 2D Array?" 
 
-
     2. Initialize g-values and heurisitcs for relevant states
     3. ComputePath(graph)
     
@@ -142,7 +141,7 @@ static void planner(
         To address this question, what are the requirements of the data structure? 
         The data structure should be ordered.
         
-        priority queue? 
+        priority queue? binary heap
 
         What search algorithm do I need to implement or use? 
         to find the min f(s) from the OPEN list or s_goal in the CLOSED list,
