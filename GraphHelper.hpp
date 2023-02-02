@@ -1,4 +1,4 @@
-#pragma once
+// #pragma once
 #ifndef GRAPHHELPER_H_
 #define GRAPHHELPER_H_
 #include <vector>
