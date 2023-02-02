@@ -2,47 +2,59 @@
 #ifndef GRAPHHELPER_H_
 #define GRAPHHELPER_H_
 #include <vector>
+#include <bits/stdc++.h>
 
 class GraphHelper{
     public:
-        GraphHelper();
+        GraphHelper(); //initialize what? what should be the member variables & functions?
 
         class Node{
             public:
-                Node(int robotPoseX, int robotPoseY, int currTime) 
-                : mx(robotPoseX), my(robotPoseY), mt(currTime), mbStart(0), mbOpened(0), mbClosed(0) 
+                Node(int poseX, int poseY, int currTime) 
+                : mX(poseX), mY(poseY), mT(currTime),
+                  mG(INT_MAX), mH(0), 
+                  mbStart(0), mbGoal(0) 
                 {};
                 
                 const int GetPoseX() const;
                 const int GetPoseY() const;
                 const int GetCurrentTime() const;
+
+                int GetGValue() const;
+                void SetGValue(const int val);
+                int GetHeuristics() const;
+                void SetHeuristics(const int val);
+
                 const bool GetBoolStart() const;
                 void SetBoolStart(const bool state);
-                const bool GetBoolOpened() const;
-                void SetBoolOpened(const bool state);
-                const bool GetBoolClosed() const;
-                void SetBoolClosed(const bool state);
+                const bool GetBoolGoal() const;
+                void SetBoolGoal(const bool state);
 
             private:
-                int mx;
-                int my;
-                int mt;
-                bool mbStart;  
-                bool mbOpened; // open:1,
-                bool mbClosed;
-                
+                // a 3D state of mx, my, mt
+                int mX;
+                int mY;
+                int mT;
+                // g-value and heuristics
+                int mG;
+                int mH;
+                // S_start, S_goal, or else
+                bool mbStart;
+                bool mbGoal;            
         };
-    
-        int GetCellCost(Node n, double* map, int x_size, int y_size) const; // returns the map_cost_value
 
-        std::vector<GraphHelper::Node> CreateSmallGraph(Node n, int robotposeX, int robotposeY,
-        const double* map, const int collision_thresh, const int x_size, const int y_size, 
-        int curr_time     
+        // Do I need GetStartNode and GetGoalNode?  
+        
+        Node GetNode(int posX, int posY, int currTime);
+
+        // a general 8-grid graph generator surrounding the given node
+        std::vector<GraphHelper::Node> CreateSmallGraph(Node& n,
+        const double* map, const int collisionThresh, const int xSize, const int ySize, 
+        int currTime     
         ); 
 
     // private:
     //     int x;
-
 
 };
 
