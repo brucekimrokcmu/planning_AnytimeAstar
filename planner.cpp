@@ -5,6 +5,11 @@
  *=================================================================*/
 #include <math.h>
 #include <mex.h>
+#include <iostream>
+#include <queue>
+#include "FValueCompare.hpp"
+#include "GraphHelper.hpp"
+
 
 /* Input Arguments */
 #define	MAP_IN                  prhs[0]
@@ -64,62 +69,47 @@ static void planner(
     double olddisttotarget = (double)sqrt(((robotposeX-goalposeX)*(robotposeX-goalposeX) + (robotposeY-goalposeY)*(robotposeY-goalposeY)));
     double disttotarget;
 
-
-
-    /*
-    1. ConstructGraph - Implicit "represented as a 2D Array?" 
-
-    2. Initialize g-values and heurisitcs for relevant states
-    3. ComputePath(graph)
+    //how to store startPose?
     
+    // 1. CreateGraph - Implicit "represented as a 2D Array?" 
+    // define S_start, S_goal
+
+    // int startPoseX = robotposeX; <-- start pose will be updated at each iteration, thus INCORRECT
+    // int startPoseY = robotposeY;
+    // GraphHelper::Node startNode = GraphHelper::GetNode(startPoseX, startPoseY, curr_time); 
     
-    */ 
+    GraphHelper::Node currNode(robotposeX, robotposeY, curr_time);
+    GraphHelper::Node goalNode(goalposeX, goalposeY, curr_time);
 
-
-    for(int dir = 0; dir < NUMOFDIRS; dir++)
-    {
-        int newx = robotposeX + dX[dir];
-        int newy = robotposeY + dY[dir];
-
-        if (newx >= 1 && newx <= x_size && newy >= 1 && newy <= y_size)
-        {
-            if (((int)map[GETMAPINDEX(newx,newy,x_size,y_size)] >= 0) && ((int)map[GETMAPINDEX(newx,newy,x_size,y_size)] < collision_thresh))  //if free
-            {
-                disttotarget = (double)sqrt(((newx-goalposeX)*(newx-goalposeX) + (newy-goalposeY)*(newy-goalposeY)));
-                if(disttotarget < olddisttotarget)
-                {
-                    olddisttotarget = disttotarget;
-                    bestX = dX[dir];
-                    bestY = dY[dir];
-                }
-            }
-        }
-    }
-
-    /*
-    Pseudocode of A*
+    /* THIS IS NOT WORKING! 
+    error: undefined reference to 'GraphHelper::Node::GetPoseX() const'
     
-
-    // represent the map into a graph --> to get 's'
-
-    OPEN = {s_start};
-    CLOSED = {};
-
-    while(s_goal is not expanded && OPEN!=0) //i.e. s_goal(=goalpose) is not in the CLOSED list
-    { 
-        remove s with the smallest [f(s)=g(s)+h(s)] from OPEN;
-        insert s into CLOSED;
-
-        for every successor s' of s such that s' not in CLOSED;
-            if g(s') > g(s) + c(s, s')
-                g(s') = g(s) + c(s, s')
-                insert s' into OPEN;
-    
-    } 
-
+    const int curr_x =  currNode.GetPoseX();
+    std::cout << curr_x << std::endl; 
     */
+    
+    // Pseudocode of A*
 
 
+    std::vector<GraphHelper::Node> smallGraph = GraphHelper::CreateSmallGraph(currNode, map, collision_thresh, x_size, y_size, curr_time);
+
+    // std::priority_queue<GraphHelper::Node, std::vector<GraphHelper::Node>, FValueCompare> openList; 
+    // Min order by Node.f_value 
+    // openList.push(startNode);
+    // OPEN = {s_start}; // priority queue 
+    // CLOSED = {};
+
+    // while(s_goal is not expanded && OPEN!=0) //i.e. s_goal(=goalpose) is not in the CLOSED list
+    // { 
+    //     remove s with the smallest [f(s)=g(s)+h(s)] from OPEN;
+    //     insert s into CLOSED;
+    //     for every successor s' of s such that s' not in CLOSED;
+    //         if g(s') > g(s) + c(s, s')
+    //             g(s') = g(s) + c(s, s')
+    //             insert s' into OPEN;
+    // } 
+
+    
    // 3. publish action(solution)
     robotposeX = robotposeX + bestX;
     robotposeY = robotposeY + bestY;
@@ -129,13 +119,10 @@ static void planner(
     return;
 }
 
-    /*
-    
+    /*    
     Questions
 
-    0. How do I define state?
-        2 dimension - x, y 
-        goalposeX, goalposeY  
+    0. Graph representation - class Node {int x, int y, int t, bool flag}
 
     1. What data structure and search algorithm are needed for OPEN & CLOSED list? 
         To address this question, what are the requirements of the data structure? 

@@ -10,6 +10,11 @@ class GraphHelper{
 
         class Node{
             public:
+                Node() 
+                : mX(0), mY(0), mT(0), mG(INT_MAX), mH(0), 
+                  mbStart(0), mbGoal(0) 
+                {};
+                
                 Node(int poseX, int poseY, int currTime) 
                 : mX(poseX), mY(poseY), mT(currTime),
                   mG(INT_MAX), mH(0), 
@@ -43,8 +48,7 @@ class GraphHelper{
                 bool mbGoal;            
         };
 
-        // Do I need GetStartNode and GetGoalNode?  
-        
+        // Do I need GetNode? 
         Node GetNode(int posX, int posY, int currTime);
 
         // a general 8-grid graph generator surrounding the given node

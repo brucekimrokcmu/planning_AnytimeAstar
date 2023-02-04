@@ -31,27 +31,26 @@ GraphHelper::Node GraphHelper::GetNode(int poseX, int poseY, int currTime)
     return Node(poseX, poseY, currTime);
 }
 
-std::vector<GraphHelper::Node> GraphHelper::CreateSmallGraph(GraphHelper::Node& n, 
+std::vector<GraphHelper::Node> CreateSmallGraph(GraphHelper::Node node, 
     const double* map, const int collisionThresh, const int xSize, const int ySize, 
     int currTime) //is currTime redundant? 
 {
     std::vector<GraphHelper::Node> small_graph;
     int const dX[NUMOFDIRS] = {-1, -1, -1,  0,  0,  1, 1, 1};
     int const dY[NUMOFDIRS] = {-1,  0,  1, -1,  1, -1, 0, 1};
-    int newX = n.GetPoseX(); 
-    int newY = n.GetPoseY();
-    int newT = n.GetCurrentTime();
+    int newX = node.GetPoseX(); 
+    int newY = node.GetPoseY();
+    int newT = node.GetCurrentTime();
 
     // add the current robotpose as a state after checking conditions such as collision threshold and map boundary 
     if (newX >= 1 && newX <= xSize && newY >= 1 && newY <= ySize) {
         if (((int)map[GETMAPINDEX(newX,newY,xSize,ySize)] >= 0) && 
             ((int)map[GETMAPINDEX(newX,newY,xSize,ySize)] < collisionThresh)) {
-            small_graph.insert(small_graph.begin(),n);
+            small_graph.push_back(node);
         } // else what? 
    
     } // else what? 
     
-
     // add surrounding nodes
     for (int dir=0; dir<NUMOFDIRS; dir++) {
         newX += dX[dir];
@@ -61,13 +60,13 @@ std::vector<GraphHelper::Node> GraphHelper::CreateSmallGraph(GraphHelper::Node& 
             if (((int)map[GETMAPINDEX(newX,newY,xSize,ySize)] >= 0) && 
                 ((int)map[GETMAPINDEX(newX,newY,xSize,ySize)] < collisionThresh)) {
                 // Get a new node here 
-                GraphHelper::Node newNode = GraphHelper::GetNode(newX, newY, currTime); 
-                small_graph.insert((small_graph.begin()+1)+dir, newNode);
+                GraphHelper::Node newNode(newX, newY, currTime);
+                // newNode.GetNode(newX, newY, currTime);
+                small_graph.push_back(newNode);
             }
         }
     }
     
-
     // Do I want to assign g-value and heuristics and then return the array of class?
     // assign g_value and heuristics
 
