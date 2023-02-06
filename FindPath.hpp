@@ -1,14 +1,16 @@
 #pragma once
-#include "GraphHelper.hpp"
+#include "Node.hpp"
 
 class FindPath{
     public:
-        FindPath(); // constructor... initialize what?
+        // FindPath(); 
 
-        int ComputeGValue(GraphHelper::Node n, GraphHelper::Node startNode,
-        const double* map, const int xSize, const int ySize);
-        int ComputeHeuristics(GraphHelper::Node n, GraphHelper::Node goalNode);
-        int ComputeCostBwNodes(GraphHelper::Node n1, GraphHelper::Node n2, const double* map, const int xSize, const int ySize);
+        int ComputeCostBwNodes(Node node1, Node node2, const double* map, const int xSize, const int ySize);
+
+        // int ComputeGValue(Node node, Node startNode,
+        // const double* map, const int xSize, const int ySize);
+        
+        int ComputeHeuristics(Node node, Node goalNode);
 
 
-};
+}

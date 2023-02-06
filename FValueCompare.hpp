@@ -1,7 +1,7 @@
 #pragma once
-#include "GraphHelper.hpp"
+#include "Node.hpp"
 
 class FValueCompare{
     public:
-        bool operator()(GraphHelper::Node n1, GraphHelper::Node n2);
+        bool operator()(Node node1, Node node2);
 };

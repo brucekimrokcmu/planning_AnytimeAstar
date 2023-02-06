@@ -7,9 +7,9 @@
 #include <mex.h>
 #include <iostream>
 #include <queue>
+#include <vector>
 #include "FValueCompare.hpp"
-#include "GraphHelper.hpp"
-
+#include "Node.hpp"
 
 /* Input Arguments */
 #define	MAP_IN                  prhs[0]
@@ -35,7 +35,6 @@
 #endif
 
 #define NUMOFDIRS 8
-
 
 static void planner(
         double*	map,
@@ -71,43 +70,99 @@ static void planner(
 
     //how to store startPose?
     
-    // 1. CreateGraph - Implicit "represented as a 2D Array?" 
-    // define S_start, S_goal
+    // 1. define S_start, S_goal
+    Node startNode(robotposeX, robotposeY, curr_time, map, x_size, y_size);    
+    Node goalNode(goalposeX, goalposeY, curr_time, map, x_size, y_size);
 
-    // int startPoseX = robotposeX; <-- start pose will be updated at each iteration, thus INCORRECT
-    // int startPoseY = robotposeY;
-    // GraphHelper::Node startNode = GraphHelper::GetNode(startPoseX, startPoseY, curr_time); 
+    // now I'm going to create a graph with the start node 
+    std::vector<Node> smallGraph;
+
+    // Are these necessary?
+    int startX = startNode.GetPoseX(); 
+    int startY = startNode.GetPoseY();
+    int startT = startNode.GetCurrentTime();
+    int goalX = goalNode.GetPoseX();
+    int goalY = goalNode.GetPoseY();
+
+    // add the current robotpose as a state after checking conditions such as collision threshold and map boundary 
+    if (startX >= 1 && startX <= x_size && startY >= 1 && startY <= y_size) {
+        if (((int)map[GETMAPINDEX(startX,startY,x_size,y_size)] >= 0) && 
+            ((int)map[GETMAPINDEX(startX,startY,x_size,y_size)] < collision_thresh)) {
+            
+            startNode.SetBoolClosed(false);
+            startNode.SetBoolExpanded(false);
+
+            double gValue = (double)map[GETMAPINDEX(startX,startY,x_size,y_size)];
+            startNode.SetGValue(gValue);
+
+            // heuristics #1: Euclidean distance to goalNode
+            double heuristic = (double)std::sqrt(((goalX - startX)*(goalX-startX) + (goalY - startY)*(goalY-startY)));
+            startNode.SetHeuristics(heuristic);
+
+            // heuristics #2: others?
+
+            smallGraph.push_back(startNode);
+
+
+        } // else what? 
+   
+    } // else what? 
     
-    GraphHelper::Node currNode(robotposeX, robotposeY, curr_time);
-    GraphHelper::Node goalNode(goalposeX, goalposeY, curr_time);
+    // add surrounding nodes
+    for (int dir=0; dir<NUMOFDIRS; dir++) {
 
-    /* THIS IS NOT WORKING! 
-    error: undefined reference to 'GraphHelper::Node::GetPoseX() const'
-    
-    const int curr_x =  currNode.GetPoseX();
-    std::cout << curr_x << std::endl; 
-    */
-    
-    // Pseudocode of A*
+        int newX = startX + dX[dir];
+        int newY = startY + dX[dir];
+        // Get a new node here 
+        Node newNode(newX, newY, curr_time, map, x_size, y_size);
+
+        // check collision, boundary
+        if (newX >= 1 && newX <= x_size && newY >= 1 && newY <= y_size) {
+            if (((int)map[GETMAPINDEX(newX,newY,x_size,y_size)] >= 0) && 
+                ((int)map[GETMAPINDEX(newX,newY,x_size,y_size)] < collision_thresh)) {
+                
+                newNode.SetBoolClosed(false);
+                newNode.SetBoolExpanded(false);
+
+                double gValue = (double)map[GETMAPINDEX(newX,newY,x_size,y_size)];
+                newNode.SetGValue(gValue);
+
+                // heuristics #1: Euclidean distance to goalNode
+                double heuristic = (double)std::sqrt(((goalX - newX)*(goalX-newX) + (goalY - newY)*(goalY-newY)));
+                newNode.SetHeuristics(heuristic);
+
+                smallGraph.push_back(newNode);
+            }
+        } // else what? 
+    }
+
+    // A*
+    std::priority_queue<Node, std::vector<Node>, FValueCompare> openList; 
+
+    goalNode.SetBoolExpanded(false);
+    openList.push(startNode); // OPEN = {s_start}; 
 
 
-    std::vector<GraphHelper::Node> smallGraph = GraphHelper::CreateSmallGraph(currNode, map, collision_thresh, x_size, y_size, curr_time);
+    // while(s_goal is not expanded && OPEN!=0){ //i.e. s_goal(=goalpose) is not in the CLOSED list
+    while((!goalNode.GetBoolExpanded()) && (!openList.empty())) {
+    // remove s with the smallest [f(s)=g(s)+h(s)] from OPEN;
+    //  insert s into CLOSED;
+        Node ref = openList.top();
+        ref.SetBoolClosed(true);
+        // openList.pop();
 
-    // std::priority_queue<GraphHelper::Node, std::vector<GraphHelper::Node>, FValueCompare> openList; 
-    // Min order by Node.f_value 
-    // openList.push(startNode);
-    // OPEN = {s_start}; // priority queue 
-    // CLOSED = {};
+    //  for every successor s' of s such that s' not in CLOSED;
 
-    // while(s_goal is not expanded && OPEN!=0) //i.e. s_goal(=goalpose) is not in the CLOSED list
-    // { 
-    //     remove s with the smallest [f(s)=g(s)+h(s)] from OPEN;
-    //     insert s into CLOSED;
-    //     for every successor s' of s such that s' not in CLOSED;
-    //         if g(s') > g(s) + c(s, s')
-    //             g(s') = g(s) + c(s, s')
-    //             insert s' into OPEN;
-    // } 
+    //     if g(s') > g(s) + c(s, s')
+            
+
+//             g(s') = g(s) + c(s, s')
+//             insert s' into OPEN;
+
+    } 
+
+
+    // Backward A*
 
     
    // 3. publish action(solution)
@@ -135,20 +190,22 @@ static void planner(
         binary tree? sort? 
 
         For inserting and removing s, 
+        priority queue - push(), pop() 
+
+
         Queue, stack,  sets?; heap? smart pointers? 
-
-        How do I insert a 2D element (x, y)?
-
 
     2. How to define g(s) and h(s)? 
         g(s) = cost incurred until now 
     
         h(s) <- for this, I would first start with simple Euclidean heuristics 
         then improve this by other heuristics algorithms  
+        : By setting heuristics (s -> s_goal) as g* value
 
 
     3. Is Backward A* what I am looking for since the goal is moving? 
-
+        Multi Backward A* 
+        
     */
 
 
@@ -189,7 +246,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
     double* robotposeV = mxGetPr(ROBOT_IN);
     int robotposeX = (int)robotposeV[0];
     int robotposeY = (int)robotposeV[1];
-    
+
+
     /* get the dimensions of the goalpose and the goalpose itself*/
     int targettraj_M = mxGetM(TARGET_TRAJ);
     int targettraj_N = mxGetN(TARGET_TRAJ);

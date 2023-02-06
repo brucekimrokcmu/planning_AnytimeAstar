@@ -1,11 +1,11 @@
 #include "FValueCompare.hpp"
 
-bool FValueCompare::operator()(GraphHelper::Node n1, GraphHelper::Node n2)
+bool FValueCompare::operator()(Node node1, Node node2)
 {
-    int fValueN1 =n1.GetGValue()+n1.GetHeuristics();
-    int fValueN2 =n2.GetGValue()+n2.GetHeuristics();
+    int fValueNode1 =node1.GetGValue()+node1.GetHeuristics();
+    int fValueNode2 =node2.GetGValue()+node2.GetHeuristics();
 
-    if ((fValueN1) <= (fValueN2)) {
+    if ((fValueNode1) <= (fValueNode2)) {
         return true;
     } else {
         return false;

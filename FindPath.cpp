@@ -2,17 +2,29 @@
 #define GETMAPINDEX(X, Y, XSIZE, YSIZE) ((Y-1)*XSIZE + (X-1)) // redundant define ?
 
 
-int ComputeGValue(GraphHelper::Node n, GraphHelper::Node startNode,
-const double* map, const int xSize, const int ySize)
+int ComputeCostBwNodes(Node node1, Node node2, const double* map, const int xSize, const int ySize)
 {
+    int cost;
+
     
-    return 1;
+ 
+    return cost;   
 }
-int ComputeHeuristics(GraphHelper::Node n, GraphHelper::Node goalNode)
+
+
+
+
+
+
+
+// int ComputeGValue(Node node, Node startNode,
+// const double* map, const int xSize, const int ySize)
+// {
+//     return 1;
+// }
+
+
+int ComputeHeuristics(Node node, Node goalNode)
 {
     return 1;
-}
-int ComputeCostBwNodes(GraphHelper::Node n1, GraphHelper::Node n2, const double* map, const int xSize, const int ySize)
-{
-    return 1;   
 }
