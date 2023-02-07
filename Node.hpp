@@ -1,19 +1,23 @@
-#pragma once 
+#pragma once
+
 
 class Node{
     public:
         Node();
-        Node(int poseX, int poseY, int currTime, double* map, int xSize, int ySize);
+        Node(int poseX, int poseY, int currTime);
         
         int GetPoseX() const;
         int GetPoseY() const;
         int GetCurrentTime() const;
+        void SetCurrentTime(const int val);
 
-        double GetCellCost() const;
         double GetGValue() const;
         void SetGValue(const double val);
         double GetHeuristics() const;
         void SetHeuristics(const double val);
+        double GetFValue() const;
+        void SetFValue(const double val);
+
 
         bool GetBoolClosed() const; 
         void SetBoolClosed(const bool val);
@@ -26,9 +30,9 @@ class Node{
         int mY;
         int mT;
         // Cell cost g-value and heuristics
-        double mC; // might not need this
         double mG;
         double mH;
+        double mF;
         // Bool Closed
         bool mbClosed;
         bool mbExpanded;

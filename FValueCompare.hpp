@@ -4,4 +4,5 @@
 class FValueCompare{
     public:
         bool operator()(Node node1, Node node2);
+        // bool operator()(Node *node1, Node *node2);
 };

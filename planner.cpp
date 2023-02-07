@@ -3,13 +3,9 @@
  * planner.c
  *
  *=================================================================*/
-#include <math.h>
+
+#include "FindPath.hpp"
 #include <mex.h>
-#include <iostream>
-#include <queue>
-#include <vector>
-#include "FValueCompare.hpp"
-#include "Node.hpp"
 
 /* Input Arguments */
 #define	MAP_IN                  prhs[0]
@@ -26,15 +22,6 @@
 //1-based indexing in matlab (so, robotpose and goalpose are 1-indexed)
 #define GETMAPINDEX(X, Y, XSIZE, YSIZE) ((Y-1)*XSIZE + (X-1))
 
-#if !defined(MAX)
-#define	MAX(A, B)	((A) > (B) ? (A) : (B))
-#endif
-
-#if !defined(MIN)
-#define	MIN(A, B)	((A) < (B) ? (A) : (B))
-#endif
-
-#define NUMOFDIRS 8
 
 static void planner(
         double*	map,
@@ -50,11 +37,7 @@ static void planner(
         int curr_time,
         double* action_ptr
         )
-{
-    // 8-connected grid
-    int dX[NUMOFDIRS] = {-1, -1, -1,  0,  0,  1, 1, 1};
-    int dY[NUMOFDIRS] = {-1,  0,  1, -1,  1, -1, 0, 1};
-    
+{    
     int goalposeX = (int) target_traj[target_steps-1];
     int goalposeY = (int) target_traj[target_steps-1+target_steps];
     // for now greedily move towards the final target position,
@@ -65,48 +48,41 @@ static void planner(
     // int goalposeY = (int) target_traj[curr_time-1+target_steps];
 
     int bestX = 0, bestY = 0; // robot will not move if greedy action leads to collision
-    double olddisttotarget = (double)sqrt(((robotposeX-goalposeX)*(robotposeX-goalposeX) + (robotposeY-goalposeY)*(robotposeY-goalposeY)));
-    double disttotarget;
-
-    //how to store startPose?
+    double eps = 1.0;
     
-    // 1. define S_start, S_goal
-    Node startNode(robotposeX, robotposeY, curr_time, map, x_size, y_size);    
-    Node goalNode(goalposeX, goalposeY, curr_time, map, x_size, y_size);
+    //Initialize start/goal node
+    Node startNode(robotposeX, robotposeY, curr_time);    
+    Node goalNode(goalposeX, goalposeY, curr_time);
 
-    // now I'm going to create a graph with the start node 
-    std::vector<Node> smallGraph;
-
-    // Are these necessary?
     int startX = startNode.GetPoseX(); 
     int startY = startNode.GetPoseY();
     int startT = startNode.GetCurrentTime();
     int goalX = goalNode.GetPoseX();
     int goalY = goalNode.GetPoseY();
 
-    // add the current robotpose as a state after checking conditions such as collision threshold and map boundary 
-    if (startX >= 1 && startX <= x_size && startY >= 1 && startY <= y_size) {
-        if (((int)map[GETMAPINDEX(startX,startY,x_size,y_size)] >= 0) && 
-            ((int)map[GETMAPINDEX(startX,startY,x_size,y_size)] < collision_thresh)) {
-            
-            startNode.SetBoolClosed(false);
-            startNode.SetBoolExpanded(false);
+    // heuristics #1: Euclidean distance to goalNode
+    // heuristics #2: in Backward A*, h would be g*value in the forward 3D A*
+    
+    if (FindPath::IsCellValid(startNode)) {
+        startNode.SetGValue(0.0);
+        startNode.SetHeuristics(FindPath::ComputeEuclideanHeuristics(startNode, goalNode));
+        startNode.SetFValue(FindPath::ComputeFValue(startNode, eps));
+    }
 
-            double gValue = (double)map[GETMAPINDEX(startX,startY,x_size,y_size)];
-            startNode.SetGValue(gValue);
-
-            // heuristics #1: Euclidean distance to goalNode
-            double heuristic = (double)std::sqrt(((goalX - startX)*(goalX-startX) + (goalY - startY)*(goalY-startY)));
-            startNode.SetHeuristics(heuristic);
-
-            // heuristics #2: others?
-
-            smallGraph.push_back(startNode);
-
-
-        } // else what? 
-   
+    if (FindPath::IsCellValid(goalNode)){
+        startNode.SetGValue(FindPath::GetCellCost(goalNode));
+        startNode.SetHeuristics(FindPath::ComputeEuclideanHeuristics(goalNode, goalNode));
+        startNode.SetFValue(FindPath::ComputeFValue(goalNode, eps));
     } // else what? 
+
+
+
+    std::vector<Node> smallGraph;
+    smallGraph.push_back(startNode);
+
+
+    /////////////////////LOOP STARTS HERE///////////////////////////////////////////
+    // loop until when? 
     
     // add surrounding nodes
     for (int dir=0; dir<NUMOFDIRS; dir++) {
@@ -138,75 +114,46 @@ static void planner(
 
     // A*
     std::priority_queue<Node, std::vector<Node>, FValueCompare> openList; 
+    // std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
 
     goalNode.SetBoolExpanded(false);
-    openList.push(startNode); // OPEN = {s_start}; 
+    openList.push(&startNode); // OPEN = {s_start}; 
 
 
     // while(s_goal is not expanded && OPEN!=0){ //i.e. s_goal(=goalpose) is not in the CLOSED list
     while((!goalNode.GetBoolExpanded()) && (!openList.empty())) {
     // remove s with the smallest [f(s)=g(s)+h(s)] from OPEN;
     //  insert s into CLOSED;
-        Node ref = openList.top();
-        ref.SetBoolClosed(true);
+        Node* ref = openList.top(); // this is copying. might want to try reference
+        ref->SetBoolClosed(true);
         // openList.pop();
 
     //  for every successor s' of s such that s' not in CLOSED;
+        for (int i=0; i<smallGraph.size(); i++){
+            Node n_ref = smallGraph[i]
 
+        }
     //     if g(s') > g(s) + c(s, s')
-            
+
 
 //             g(s') = g(s) + c(s, s')
 //             insert s' into OPEN;
 
     } 
 
-
-    // Backward A*
-
-    
-   // 3. publish action(solution)
     robotposeX = robotposeX + bestX;
     robotposeY = robotposeY + bestY;
+
+
+
+    ////////////////////////////////LOOP ENDS HERE //////////////////////////////
+
+   // 3. publish action(solution)
     action_ptr[0] = robotposeX;
     action_ptr[1] = robotposeY;
     
     return;
 }
-
-    /*    
-    Questions
-
-    0. Graph representation - class Node {int x, int y, int t, bool flag}
-
-    1. What data structure and search algorithm are needed for OPEN & CLOSED list? 
-        To address this question, what are the requirements of the data structure? 
-        The data structure should be ordered.
-        
-        priority queue? binary heap
-
-        What search algorithm do I need to implement or use? 
-        to find the min f(s) from the OPEN list or s_goal in the CLOSED list,
-        binary tree? sort? 
-
-        For inserting and removing s, 
-        priority queue - push(), pop() 
-
-
-        Queue, stack,  sets?; heap? smart pointers? 
-
-    2. How to define g(s) and h(s)? 
-        g(s) = cost incurred until now 
-    
-        h(s) <- for this, I would first start with simple Euclidean heuristics 
-        then improve this by other heuristics algorithms  
-        : By setting heuristics (s -> s_goal) as g* value
-
-
-    3. Is Backward A* what I am looking for since the goal is moving? 
-        Multi Backward A* 
-        
-    */
 
 
 

@@ -1,16 +1,51 @@
-#pragma once
+#pragma once;
+
+#include <iostream>
+#include <math.h>
+#include <queue>
+#include <vector>
+#include "FValueCompare.hpp"
 #include "Node.hpp"
 
-class FindPath{
+#define NUMOFDIRS 9
+
+class FindPath {
     public:
-        // FindPath(); 
-
-        int ComputeCostBwNodes(Node node1, Node node2, const double* map, const int xSize, const int ySize);
-
-        // int ComputeGValue(Node node, Node startNode,
-        // const double* map, const int xSize, const int ySize);
+        FindPath(double* map,
+                 int collision_thresh,
+                 int x_size,
+                 int y_size,
+                 int target_steps,
+                 double* target_traj);
         
-        int ComputeHeuristics(Node node, Node goalNode);
+        void Execute(int robotposeX, 
+                     int robotposeY,
+                     int targetposeX,
+                     int targetposeY,
+                     int curr_time,
+                     double* action_ptr);
+                            
+        std::vector<Node> CreateSmallGraph(Node currNode, int currTime);
+        void AStar(Node startNode, Node goalNode);
+        
+        int GetCellCost(Node node);
+        bool IsCellValid(Node node);
+        // double ComputeGValue(Node startNode, Node node, int currTime);
+        double ComputeEuclideanHeuristics(Node node, Node goalNode);
+        double ComputeFValue(Node node, double eps);
+
+    private:
+        double *mmap;
+        int mcollisionThresh;
+        int mxSize;
+        int mySize;
+        int mtargetSteps;
+        double* mtargetTrajectory;
+        int mdX[NUMOFDIRS] = {-1, -1, -1,  0,  0,  0,  1, 1, 1};
+        int mdY[NUMOFDIRS] = {-1,  0,  1, -1,  0,  1, -1, 0, 1}; 
 
 
-}
+    
+
+
+};
