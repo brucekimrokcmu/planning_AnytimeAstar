@@ -51,95 +51,6 @@ static void planner(
     double eps = 1.0;
     
     //Initialize start/goal node
-    Node startNode(robotposeX, robotposeY, curr_time);    
-    Node goalNode(goalposeX, goalposeY, curr_time);
-
-    int startX = startNode.GetPoseX(); 
-    int startY = startNode.GetPoseY();
-    int startT = startNode.GetCurrentTime();
-    int goalX = goalNode.GetPoseX();
-    int goalY = goalNode.GetPoseY();
-
-    // heuristics #1: Euclidean distance to goalNode
-    // heuristics #2: in Backward A*, h would be g*value in the forward 3D A*
-    
-    if (FindPath::IsCellValid(startNode)) {
-        startNode.SetGValue(0.0);
-        startNode.SetHeuristics(FindPath::ComputeEuclideanHeuristics(startNode, goalNode));
-        startNode.SetFValue(FindPath::ComputeFValue(startNode, eps));
-    }
-
-    if (FindPath::IsCellValid(goalNode)){
-        startNode.SetGValue(FindPath::GetCellCost(goalNode));
-        startNode.SetHeuristics(FindPath::ComputeEuclideanHeuristics(goalNode, goalNode));
-        startNode.SetFValue(FindPath::ComputeFValue(goalNode, eps));
-    } // else what? 
-
-
-
-    std::vector<Node> smallGraph;
-    smallGraph.push_back(startNode);
-
-
-    /////////////////////LOOP STARTS HERE///////////////////////////////////////////
-    // loop until when? 
-    
-    // add surrounding nodes
-    for (int dir=0; dir<NUMOFDIRS; dir++) {
-
-        int newX = startX + dX[dir];
-        int newY = startY + dX[dir];
-        // Get a new node here 
-        Node newNode(newX, newY, curr_time, map, x_size, y_size);
-
-        // check collision, boundary
-        if (newX >= 1 && newX <= x_size && newY >= 1 && newY <= y_size) {
-            if (((int)map[GETMAPINDEX(newX,newY,x_size,y_size)] >= 0) && 
-                ((int)map[GETMAPINDEX(newX,newY,x_size,y_size)] < collision_thresh)) {
-                
-                newNode.SetBoolClosed(false);
-                newNode.SetBoolExpanded(false);
-
-                double gValue = (double)map[GETMAPINDEX(newX,newY,x_size,y_size)];
-                newNode.SetGValue(gValue);
-
-                // heuristics #1: Euclidean distance to goalNode
-                double heuristic = (double)std::sqrt(((goalX - newX)*(goalX-newX) + (goalY - newY)*(goalY-newY)));
-                newNode.SetHeuristics(heuristic);
-
-                smallGraph.push_back(newNode);
-            }
-        } // else what? 
-    }
-
-    // A*
-    // std::priority_queue<Node, std::vector<Node>, FValueCompare> openList; 
-    std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
-
-    goalNode.SetBoolExpanded(false);
-    openList.push(&startNode); // OPEN = {s_start}; 
-
-
-    // while(s_goal is not expanded && OPEN!=0){ //i.e. s_goal(=goalpose) is not in the CLOSED list
-    while((!goalNode.GetBoolExpanded()) && (!openList.empty())) {
-    // remove s with the smallest [f(s)=g(s)+h(s)] from OPEN;
-    //  insert s into CLOSED;
-        Node* ref = openList.top(); // this is copying. might want to try reference
-        ref->SetBoolClosed(true);
-        // openList.pop();
-
-    //  for every successor s' of s such that s' not in CLOSED;
-        for (int i=0; i<smallGraph.size(); i++){
-            Node n_ref = smallGraph[i]
-
-        }
-    //     if g(s') > g(s) + c(s, s')
-
-
-//             g(s') = g(s) + c(s, s')
-//             insert s' into OPEN;
-
-    } 
 
     robotposeX = robotposeX + bestX;
     robotposeY = robotposeY + bestY;
@@ -229,7 +140,9 @@ void mexFunction( int nlhs, mxArray *plhs[],
     int collision_thresh = (int) mxGetScalar(COLLISION_THRESH);
     
     /* Do the actual planning in a subroutine */
-    planner(map, collision_thresh, x_size, y_size, robotposeX, robotposeY, target_steps, targettrajV, targetposeX, targetposeY, curr_time, &action_ptr[0]);
+    // planner(map, collision_thresh, x_size, y_size, robotposeX, robotposeY, target_steps, targettrajV, targetposeX, targetposeY, curr_time, &action_ptr[0]);
+    FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, targettrajV);
+    pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
     // printf("DONE PLANNING!\n");
     return;   
 }

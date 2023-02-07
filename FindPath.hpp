@@ -1,4 +1,4 @@
-#pragma once;
+#pragma once
 
 #include <iostream>
 #include <math.h>
@@ -25,14 +25,16 @@ class FindPath {
                      int curr_time,
                      double* action_ptr);
                             
-        std::vector<Node> CreateSmallGraph(Node currNode, int currTime);
-        void AStar(Node startNode, Node goalNode);
+        std::vector<Node> CreateSmallGraph(Node* currNode, int currTime);
+        void AStar(Node startNode, Node goalNode, int currTime);
         
         int GetCellCost(Node node);
         bool IsCellValid(Node node);
         // double ComputeGValue(Node startNode, Node node, int currTime);
         double ComputeEuclideanHeuristics(Node node, Node goalNode);
         double ComputeFValue(Node node, double eps);
+        void ComputeBackwardDijkstra(Node goalNode, Node startNode);
+
 
     private:
         double *mmap;

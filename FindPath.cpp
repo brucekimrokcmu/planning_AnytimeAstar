@@ -19,18 +19,35 @@ void FindPath::Execute(int robotposeX,
                      int curr_time,
                      double* action_ptr)
 {
-    
+    double eps = 1.0;
+    Node startNode(robotposeX, robotposeY, curr_time);    
+    Node goalNode(targetposeX, targetposeY, curr_time);
+
+
+    if (IsCellValid(startNode)) {
+        startNode.SetGValue(0.0);
+        startNode.SetHeuristics(ComputeEuclideanHeuristics(startNode, goalNode));
+        startNode.SetFValue(ComputeFValue(startNode, eps));
+    }
+
+    if (IsCellValid(goalNode)){
+        startNode.SetGValue(GetCellCost(goalNode));
+        startNode.SetHeuristics(ComputeEuclideanHeuristics(goalNode, goalNode));
+        startNode.SetFValue(ComputeFValue(goalNode, eps));
+    }
+
+
     // action_ptr[0] = nextRobotPoseX;
     // action_ptr[1] = nextRobotPoseY;
     return;
 }
 
-std::vector<Node> FindPath::CreateSmallGraph(Node currNode, int currTime)
+std::vector<Node> FindPath::CreateSmallGraph(Node* currNode, int currTime)
 {
     std::vector<Node> smallGraph;
     for (int dir=0; dir<NUMOFDIRS; dir++) {
-        int newX = currNode.GetPoseX() + mdX[dir];
-        int newY = currNode.GetPoseY() + mdY[dir];
+        int newX = currNode->GetPoseX() + mdX[dir];
+        int newY = currNode->GetPoseY() + mdY[dir];
         
         Node newNode(newX, newY, currTime);
 
@@ -49,37 +66,33 @@ std::vector<Node> FindPath::CreateSmallGraph(Node currNode, int currTime)
 }
 
 
-void FindPath::AStar(Node startNode, Node goalNode)
+void FindPath::AStar(Node startNode, Node goalNode, int currTime)
 {
-
+   
     std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
     openList.push(&startNode); // OPEN = {s_start}; 
 
     // while(s_goal is not expanded && OPEN!=0){ 
     while((!goalNode.GetBoolExpanded()) && (!openList.empty())) {
-        
-    
-    // remove s with the smallest [f(s)=g(s)+h(s)] from OPEN;
-    //  insert s into CLOSED;
+        //  remove s with the smallest [f(s)=g(s)+h(s)] from OPEN;
+        //  insert s into CLOSED;
         Node* topNode = openList.top(); 
         topNode->SetBoolClosed(true);
         openList.pop();
-        //  might want to try reference
-        
 
-        
-
-    //  for every successor s' of s such that s' not in CLOSED;
+        //  for every successor s' of s such that s' not in CLOSED;
+        std::vector<Node> smallGraph = CreateSmallGraph(topNode, currTime);
         for (int i=0; i<smallGraph.size(); i++){
-            Node n_ref = smallGraph[i]
+            if(!smallGraph[i].GetBoolClosed()){
+                // if g(s') > g(s) + c(s, s')
+                //     g(s') = g(s) + c(s, s')
+                //     insert s' into OPEN
+                if (smallGraph[i].GetGValue() > topNode->GetGValue()+GetCellCost(smallGraph[i])){
+                    openList.push(&smallGraph[i]);
+                }
+            }
 
         }
-    //     if g(s') > g(s) + c(s, s')
-
-
-//             g(s') = g(s) + c(s, s')
-//             insert s' into OPEN;
-
     } 
 
 }
@@ -129,4 +142,14 @@ double FindPath::ComputeFValue(Node node, double eps)
     double fValue = node.GetGValue() + node.GetHeuristics()*eps;
     
     return fValue;
+}
+
+// for 3D
+// solve 2D(x,y) and use that as heuristics for higher dimension
+// so you would use Dijkstra at 2D and use that as heuristics for 3D
+
+void FindPath::ComputeBackwardDijkstra(Node goalNode, Node startNode)
+{
+ // Implement Backward Dijkstra
+
 }
