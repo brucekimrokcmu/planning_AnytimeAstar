@@ -113,8 +113,8 @@ static void planner(
     }
 
     // A*
-    std::priority_queue<Node, std::vector<Node>, FValueCompare> openList; 
-    // std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
+    // std::priority_queue<Node, std::vector<Node>, FValueCompare> openList; 
+    std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
 
     goalNode.SetBoolExpanded(false);
     openList.push(&startNode); // OPEN = {s_start}; 

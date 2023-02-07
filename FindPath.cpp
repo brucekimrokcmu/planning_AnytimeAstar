@@ -52,8 +52,8 @@ std::vector<Node> FindPath::CreateSmallGraph(Node currNode, int currTime)
 void FindPath::AStar(Node startNode, Node goalNode)
 {
 
-    std::priority_queue<Node, std::vector<Node>, FValueCompare> openList; 
-    openList.push(startNode); // OPEN = {s_start}; 
+    std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
+    openList.push(&startNode); // OPEN = {s_start}; 
 
     // while(s_goal is not expanded && OPEN!=0){ 
     while((!goalNode.GetBoolExpanded()) && (!openList.empty())) {
@@ -61,10 +61,11 @@ void FindPath::AStar(Node startNode, Node goalNode)
     
     // remove s with the smallest [f(s)=g(s)+h(s)] from OPEN;
     //  insert s into CLOSED;
-        Node topNode = openList.top(); 
+        Node* topNode = openList.top(); 
+        topNode->SetBoolClosed(true);
         openList.pop();
         //  might want to try reference
-        topNode.SetBoolClosed(true);
+        
 
         
 
