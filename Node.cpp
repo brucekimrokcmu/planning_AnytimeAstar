@@ -7,8 +7,8 @@ Node::Node()
 
 Node::Node(int poseX, int poseY, int currTime) 
     : mX(poseX), mY(poseY), mT(currTime),
-    mF(0), mG(std::numeric_limits<double>::infinity()), mH(0), 
-    mbClosed(false), mbExpanded(false)
+    mF(0), mG(std::numeric_limits<double>::infinity()), mH(0), mpparent(nullptr)
+    // mbClosed(false), mbExpanded(false)
 {        
 };
 // Pose, Time
@@ -37,14 +37,7 @@ void Node::SetFValue(const double val)
     mF = val;
 }
 
-// Boolean: Closed, Expanded
-bool Node::GetBoolClosed() const {return mbClosed;}
-void Node::SetBoolClosed(const bool val)
+void Node::SetParent(Node* pparent)
 {
-    mbClosed = val;
-}
-bool Node::GetBoolExpanded() const {return mbExpanded;}
-void Node::SetBoolExpanded(const bool val)
-{
-    mbExpanded = val;
+    mpparent = pparent;
 }

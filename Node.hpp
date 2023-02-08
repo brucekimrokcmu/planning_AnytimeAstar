@@ -1,6 +1,5 @@
 #pragma once
 
-
 class Node{
     public:
         Node();
@@ -18,11 +17,7 @@ class Node{
         double GetFValue() const;
         void SetFValue(const double val);
 
-
-        bool GetBoolClosed() const; 
-        void SetBoolClosed(const bool val);
-        bool GetBoolExpanded() const;
-        void SetBoolExpanded(const bool val);
+        void SetParent(Node* pparent);
 
     private:
         // a 3D state of mx, my, mt
@@ -33,9 +28,7 @@ class Node{
         double mG;
         double mH;
         double mF;
-        // Bool Closed
-        bool mbClosed;
-        bool mbExpanded;
-        Node* mparent;
+        // Backtracking 
+        Node* mpparent;
  
 };
