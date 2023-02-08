@@ -36,6 +36,8 @@ void FindPath::Execute(int robotposeX,
         startNode.SetFValue(ComputeFValue(goalNode, eps));
     }
 
+    AStar(startNode, goalNode, curr_time);
+
 
     // action_ptr[0] = nextRobotPoseX;
     // action_ptr[1] = nextRobotPoseY;
@@ -49,7 +51,9 @@ std::vector<Node> FindPath::CreateSmallGraph(Node* currNode, int currTime)
         int newX = currNode->GetPoseX() + mdX[dir];
         int newY = currNode->GetPoseY() + mdY[dir];
         
-        Node newNode(newX, newY, currTime);
+        //how to expand graph without duplicating visited nodes? 
+
+        Node newNode(newX, newY, currTime); // what if it overlaps with the previously defined node?
 
         if(IsCellValid(newNode)) {
             // update gValue of newNode
@@ -58,19 +62,16 @@ std::vector<Node> FindPath::CreateSmallGraph(Node* currNode, int currTime)
 
             smallGraph.push_back(newNode);
         }
-
     }
-
 
     return smallGraph;
 }
 
-
 void FindPath::AStar(Node startNode, Node goalNode, int currTime)
 {
-   
     std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
     openList.push(&startNode); // OPEN = {s_start}; 
+
 
     // while(s_goal is not expanded && OPEN!=0){ 
     while((!goalNode.GetBoolExpanded()) && (!openList.empty())) {
@@ -88,6 +89,8 @@ void FindPath::AStar(Node startNode, Node goalNode, int currTime)
                 //     g(s') = g(s) + c(s, s')
                 //     insert s' into OPEN
                 if (smallGraph[i].GetGValue() > topNode->GetGValue()+GetCellCost(smallGraph[i])){
+                    smallGraph[i].SetGValue(topNode->GetGValue()+GetCellCost(smallGraph[i]));
+                    
                     openList.push(&smallGraph[i]);
                 }
             }
@@ -97,12 +100,11 @@ void FindPath::AStar(Node startNode, Node goalNode, int currTime)
 
 }
 
-int FindPath::GetCellCost(Node node)
+int FindPath::GetNodeIndex(Node node)
 {
     int x = node.GetPoseX();
     int y = node.GetPoseY();
     return ((y-1)*mxSize + (x-1));
-
 }
 
 bool FindPath::IsCellValid(Node node)
@@ -111,7 +113,7 @@ bool FindPath::IsCellValid(Node node)
     int y = node.GetPoseY();
 
     if (x >= 1 && x <= mxSize && y >= 1 && y <= mySize) {
-        int index = GetCellCost(node);
+        int index = GetNodeIndex(node);
         if (((int)mmap[index] >= 0) && ((int)mmap[index] < mcollisionThresh)) {
             return true;
         }
@@ -148,8 +150,9 @@ double FindPath::ComputeFValue(Node node, double eps)
 // solve 2D(x,y) and use that as heuristics for higher dimension
 // so you would use Dijkstra at 2D and use that as heuristics for 3D
 
-void FindPath::ComputeBackwardDijkstra(Node goalNode, Node startNode)
+void FindPath::ComputeDijkstra(Node goalNode, Node currNode)
 {
  // Implement Backward Dijkstra
+ // while(!openList.empty()) 
 
 }

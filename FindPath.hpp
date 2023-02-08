@@ -28,12 +28,12 @@ class FindPath {
         std::vector<Node> CreateSmallGraph(Node* currNode, int currTime);
         void AStar(Node startNode, Node goalNode, int currTime);
         
-        int GetCellCost(Node node);
+        int GetNodeIndex(Node node);
         bool IsCellValid(Node node);
         // double ComputeGValue(Node startNode, Node node, int currTime);
         double ComputeEuclideanHeuristics(Node node, Node goalNode);
         double ComputeFValue(Node node, double eps);
-        void ComputeBackwardDijkstra(Node goalNode, Node startNode);
+        void ComputeDijkstra(Node goalNode, Node currNode);
 
 
     private:

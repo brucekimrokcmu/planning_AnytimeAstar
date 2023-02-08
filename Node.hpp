@@ -36,5 +36,6 @@ class Node{
         // Bool Closed
         bool mbClosed;
         bool mbExpanded;
+        Node* mparent;
  
 };
