@@ -49,15 +49,17 @@ void FindPath::Execute(int robotposeX,
     
     } 
     // now need to think about time;
+    int nextRobotPoseX;
+    int nextRobotPoseY;
     
     if (mPathIterator < mPathLength){
-        int nextRobotPoseX = mPath[mPathIterator]->GetPoseX();
-        int nextRobotPoseY = mPath[mPathIterator]->GetPoseY();
+        nextRobotPoseX = mPath[mPathIterator]->GetPoseX();
+        nextRobotPoseY = mPath[mPathIterator]->GetPoseY();
         mPathIterator++;
-        
-        action_ptr[0] = nextRobotPoseX;
-        action_ptr[1] = nextRobotPoseY;
     }
+    
+    action_ptr[0] = nextRobotPoseX;
+    action_ptr[1] = nextRobotPoseY;
     
     return;
 }
