@@ -25,6 +25,8 @@
 
 bool FindPath::mPlanningFlag;
 std::vector<Node*> FindPath::mPath;
+int FindPath::mPathLength;
+int FindPath::mPathIterator;
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray*prhs[])
 {
@@ -124,10 +126,6 @@ static void planner(
 
     robotposeX = robotposeX + bestX;
     robotposeY = robotposeY + bestY;
-
-
-
-    ////////////////////////////////LOOP ENDS HERE //////////////////////////////
 
    // 3. publish action(solution)
     action_ptr[0] = robotposeX;

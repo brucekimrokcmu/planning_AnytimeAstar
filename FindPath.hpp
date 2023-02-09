@@ -21,8 +21,9 @@ class FindPath {
         
         static bool mPlanningFlag;
         static std::vector<Node*> mPath;
+        static int mPathLength;
+        static int mPathIterator;
         
-
         void Execute(int robotposeX, 
                      int robotposeY,
                      int targetposeX,
@@ -44,7 +45,6 @@ class FindPath {
         double ComputeFValue(Node node, double eps);
         void ComputeDijkstraHeuristics(Node currNode);
 
-
     private:
         double *mmap;
         int mcollisionThresh;
@@ -55,6 +55,4 @@ class FindPath {
         int mdX[NUMOFDIRS] = {-1, -1, -1,  0,  0,  0,  1, 1, 1};
         int mdY[NUMOFDIRS] = {-1,  0,  1, -1,  0,  1, -1, 0, 1}; 
 
-
-    
 };

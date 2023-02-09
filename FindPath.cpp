@@ -42,22 +42,25 @@ void FindPath::Execute(int robotposeX,
         AStar(startNode, goalNode, curr_time, weight);
         // For AstarwithDijkstra, I will pass DikstraHeuristics as an argument
         // AStarwithDijkstra()
-        std::vector<Node*> path = GetPath(goalNode);
+        mPath = GetPath(goalNode);
+        mPathLength = mPath.size();
+        mPathIterator = 0;
         mPlanningFlag = false;
-    } 
-
     
-
-    // action_ptr[0] = nextRobotPoseX;
-    // action_ptr[1] = nextRobotPoseY;
+    } 
+    // now need to think about time;
+    
+    if (mPathIterator < mPathLength){
+        int nextRobotPoseX = mPath[mPathIterator]->GetPoseX();
+        int nextRobotPoseY = mPath[mPathIterator]->GetPoseY();
+        mPathIterator++;
+        
+        action_ptr[0] = nextRobotPoseX;
+        action_ptr[1] = nextRobotPoseY;
+    }
+    
     return;
 }
-
-
-
-    // for (int dir=0; dir<NUMOFDIRS; dir++) {
-    //     int newX = currNode->GetPoseX() + mdX[dir];
-    //     int newY = currNode->GetPoseY() + mdY[dir];
 
 void FindPath::AStar(Node startNode, Node goalNode, int currTime, double weight)
 {

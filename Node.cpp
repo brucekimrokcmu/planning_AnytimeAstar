@@ -7,7 +7,7 @@ Node::Node()
 
 Node::Node(int poseX, int poseY, int currTime) 
     : mX(poseX), mY(poseY), mT(currTime),
-    mF(0), mG(std::numeric_limits<double>::infinity()), mH(0), mpparent(nullptr)
+    mF(0), mG(std::numeric_limits<double>::infinity()), mH(0), mpParent(nullptr)
     // mbClosed(false), mbExpanded(false)
 {        
 };
@@ -39,10 +39,10 @@ void Node::SetFValue(const double val)
 
 Node* Node::GetParent() const
 {
-    return mpparent;
+    return mpParent;
 }
 
-void Node::SetParent(Node* pparent)
+void Node::SetParent(Node* pParent)
 {
-    mpparent = pparent;
+    mpParent = pParent;
 }

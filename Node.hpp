@@ -18,7 +18,7 @@ class Node{
         void SetFValue(const double val);
         
         Node* GetParent() const;
-        void SetParent(Node* pparent);
+        void SetParent(Node* pParent);
         
 
     private:
@@ -31,6 +31,6 @@ class Node{
         double mH;
         double mF;
         // Backtracking 
-        Node* mpparent;
+        Node* mpParent;
  
 };
