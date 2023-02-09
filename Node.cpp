@@ -37,6 +37,11 @@ void Node::SetFValue(const double val)
     mF = val;
 }
 
+Node* Node::GetParent() const
+{
+    return mpparent;
+}
+
 void Node::SetParent(Node* pparent)
 {
     mpparent = pparent;

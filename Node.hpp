@@ -16,8 +16,10 @@ class Node{
         void SetHeuristics(const double val);
         double GetFValue() const;
         void SetFValue(const double val);
-
+        
+        Node* GetParent() const;
         void SetParent(Node* pparent);
+        
 
     private:
         // a 3D state of mx, my, mt

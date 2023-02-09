@@ -19,16 +19,21 @@ class FindPath {
                  int target_steps,
                  double* target_traj);
         
+        static bool mPlanningFlag;
+        static std::vector<Node*> mPath;
+        
+
         void Execute(int robotposeX, 
                      int robotposeY,
                      int targetposeX,
                      int targetposeY,
                      int curr_time,
-                     double* action_ptr);
-                            
+                     double* action_ptr);                    
 
         void AStar(Node startNode, Node goalNode, int currTime, double eps);
         // void AStarwithDijkstra(Node startNode, Node goalNode, int currTime);
+        std::vector<Node*> GetPath(Node goalNode);
+
         int GetNodeIndex(Node node);
         int GetIndexFromPose(int x, int y);
         bool IsCellValid(Node node);
@@ -37,7 +42,7 @@ class FindPath {
         // double ComputeGValue(Node startNode, Node node, int currTime);
         double ComputeEuclideanHeuristics(Node node, Node goalNode);
         double ComputeFValue(Node node, double eps);
-        void ComputeDijkstra(Node currNode);
+        void ComputeDijkstraHeuristics(Node currNode);
 
 
     private:
@@ -52,6 +57,4 @@ class FindPath {
 
 
     
-
-
 };

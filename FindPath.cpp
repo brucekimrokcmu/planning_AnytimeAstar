@@ -20,23 +20,33 @@ void FindPath::Execute(int robotposeX,
                      double* action_ptr)
 {
     double weight = 1.0;
-    Node startNode(robotposeX, robotposeY, curr_time);    
-    Node goalNode(targetposeX, targetposeY, curr_time);
 
-    if (IsCellValid(startNode)) {
-        startNode.SetGValue(0.0);
-        startNode.SetHeuristics(ComputeEuclideanHeuristics(startNode, goalNode));
-        startNode.SetFValue(ComputeFValue(startNode, weight));
-    }
+    if (mPlanningFlag)
+    {
+        Node startNode(robotposeX, robotposeY, curr_time);    
+        Node goalNode(targetposeX, targetposeY, curr_time);
 
-    if (IsCellValid(goalNode)){
-        startNode.SetGValue(mmap[GetNodeIndex(goalNode)]);
-        startNode.SetHeuristics(ComputeEuclideanHeuristics(goalNode, goalNode));
-        startNode.SetFValue(ComputeFValue(goalNode, weight));
-    }
+        // Compute heuristics
+        if (IsCellValid(startNode)) {
+            startNode.SetGValue(0.0);
+            startNode.SetHeuristics(ComputeEuclideanHeuristics(startNode, goalNode));
+            startNode.SetFValue(ComputeFValue(startNode, weight));
+        }
 
-    AStar(startNode, goalNode, curr_time, weight);
+        if (IsCellValid(goalNode)){
+            startNode.SetGValue(mmap[GetNodeIndex(goalNode)]);
+            startNode.SetHeuristics(ComputeEuclideanHeuristics(goalNode, goalNode));
+            startNode.SetFValue(ComputeFValue(goalNode, weight));
+        }
 
+        AStar(startNode, goalNode, curr_time, weight);
+        // For AstarwithDijkstra, I will pass DikstraHeuristics as an argument
+        // AStarwithDijkstra()
+        std::vector<Node*> path = GetPath(goalNode);
+        mPlanningFlag = false;
+    } 
+
+    
 
     // action_ptr[0] = nextRobotPoseX;
     // action_ptr[1] = nextRobotPoseY;
@@ -48,14 +58,6 @@ void FindPath::Execute(int robotposeX,
     // for (int dir=0; dir<NUMOFDIRS; dir++) {
     //     int newX = currNode->GetPoseX() + mdX[dir];
     //     int newY = currNode->GetPoseY() + mdY[dir];
-        
-
-bool FindPath::IsVisited(std::unordered_map<int, Node*> list, int index)
-{
-    if (list.find(index) == list.end()) {return false;}
-    return true;
-}
-
 
 void FindPath::AStar(Node startNode, Node goalNode, int currTime, double weight)
 {
@@ -72,8 +74,8 @@ void FindPath::AStar(Node startNode, Node goalNode, int currTime, double weight)
         closedList[GetNodeIndex(*topNode)] = topNode;
         openList.pop();
         
-        //  for every successor s' of s such that s' not in CLOSED;       // need to calculate time!
-        for (int dir=0; dir<NUMOFDIRS; dir++){
+        //  for every successor s' of s such that s' not in CLOSED;  
+        for (int dir=0; dir<NUMOFDIRS; dir++){ // need to calculate time, which increases by +1
             int newX = topNode->GetPoseX() + mdX[dir];
             int newY = topNode->GetPoseY() + mdY[dir];
             int newIndex = GetIndexFromPose(newX, newY);
@@ -105,12 +107,27 @@ void FindPath::AStar(Node startNode, Node goalNode, int currTime, double weight)
             }
         }
     } 
+
+    return;
 }
 
+void AStarwithDijkstra(Node startNode, Node goalNode, int currTime)
+{
+}
 
-// void AStarwithDijkstra(Node startNode, Node goalNode, int currTime)
-// {
-// }
+std::vector<Node*> FindPath::GetPath(Node goalNode)
+{
+    std::vector<Node*> path;
+    path.emplace_back(&goalNode);
+
+    Node* pparent = goalNode.GetParent();
+    while(pparent != nullptr){
+        pparent = pparent->GetParent();
+        path.emplace_back(pparent);
+    }
+    return  path;
+}
+
 
 int FindPath::GetNodeIndex(Node node)
 {
@@ -136,6 +153,12 @@ bool FindPath::IsCellValid(Node node)
         }
     }
     return false;
+}
+
+bool FindPath::IsVisited(std::unordered_map<int, Node*> list, int index)
+{
+    if (list.find(index) == list.end()) {return false;} 
+    return true;
 }
 
 // double FindPath::ComputeGValue(Node startNode, Node node, int currTime)
@@ -167,7 +190,7 @@ double FindPath::ComputeFValue(Node node, double eps)
 // solve 2D(x,y) and use that as heuristics for higher dimension
 // so you would use Dijkstra at 2D and use that as heuristics for 3D
 
-void FindPath::ComputeDijkstra(Node currNode)
+void FindPath::ComputeDijkstraHeuristics(Node currNode)
 {
  // Implement Backward Dijkstra
  // while(!openList.empty()) 
