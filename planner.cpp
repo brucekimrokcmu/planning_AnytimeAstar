@@ -49,11 +49,14 @@ static void planner(
     }
 
     FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, target_traj);
+    // should I update targetpose outside Execute function?
     targetposeX = (int) target_traj[target_steps-1+curr_time];
     targetposeY = (int) target_traj[target_steps-1+target_steps+curr_time];
 
     pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
     
+    // at somewhere here, curr_time should be updated. 
+
     return;
 }
 

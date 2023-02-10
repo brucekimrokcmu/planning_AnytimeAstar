@@ -1,5 +1,5 @@
 #include "FindPath.hpp"
-
+FindPath::FindPath(){};
 FindPath::FindPath(double* map,
                  int collision_thresh,
                  int x_size,
@@ -24,8 +24,10 @@ void FindPath::Execute(int robotposeX,
     if (mPlanningFlag)
     {
         
-        Node startNode(robotposeX, robotposeY, curr_time);    
-        Node goalNode(targetposeX, targetposeY, curr_time);
+        Node startNode(robotposeX, robotposeY, curr_time);  
+        // this doesn't take account of goalpose changes w.r.t. time changes  
+        // Let's first assume that goal pose is stationary and try to debug
+        Node goalNode(targetposeX, targetposeY, curr_time); 
 
         // Compute heuristics
         if (IsCellValid(startNode)) {
@@ -71,8 +73,9 @@ void FindPath::AStar(Node startNode, Node goalNode, int currTime, double weight)
 {
     std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
     std::unordered_map<int, Node*> closedList;
-
-    openList.push(&startNode); // OPEN = {s_start}; 
+    
+    // OPEN = {s_start}; 
+    openList.push(&startNode); 
 
     // while(s_goal is not expanded && OPEN!=0){ 
     while((!IsVisited(closedList, GetNodeIndex(goalNode))) && (!openList.empty())) {
@@ -102,6 +105,9 @@ void FindPath::AStar(Node startNode, Node goalNode, int currTime, double weight)
                 // If not visited -> create a node
                 Node succNode(newX, newY, currTime);
                 succNode.SetHeuristics(ComputeEuclideanHeuristics(succNode, goalNode)); 
+                // if it's not going to be pushed into openlist, do I even need to compute and sset heuristics?
+
+
                 // if g(s') > g(s) + c(s, s')
                 //     g(s') = g(s) + c(s, s')
                 //     insert s' into OPEN
