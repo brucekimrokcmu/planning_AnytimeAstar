@@ -23,7 +23,7 @@
 //1-based indexing in matlab (so, robotpose and goalpose are 1-indexed)
 #define GETMAPINDEX(X, Y, XSIZE, YSIZE) ((Y-1)*XSIZE + (X-1))
 
-FindPath pathPlanner; // might need an empty constructor
+FindPath pathPlanner;
 bool FindPath::mPlanningFlag;
 std::vector<Node*> FindPath::mPath;
 int FindPath::mPathLength;
@@ -49,8 +49,8 @@ static void planner(
     }
 
     FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, target_traj);
-    int goalposeX = (int) target_traj[target_steps-1+curr_time];
-    int goalposeY = (int) target_traj[target_steps-1+target_steps+curr_time];
+    int targetposeX = (int) target_traj[target_steps-1+curr_time];
+    int targetposeY = (int) target_traj[target_steps-1+target_steps+curr_time];
     pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
     
     return;
