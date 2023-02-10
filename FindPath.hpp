@@ -12,6 +12,7 @@
 
 class FindPath {
     public:
+        FindPath(){};
         FindPath(double* map,
                  int collision_thresh,
                  int x_size,

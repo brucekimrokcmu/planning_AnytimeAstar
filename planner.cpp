@@ -23,10 +23,38 @@
 //1-based indexing in matlab (so, robotpose and goalpose are 1-indexed)
 #define GETMAPINDEX(X, Y, XSIZE, YSIZE) ((Y-1)*XSIZE + (X-1))
 
+FindPath pathPlanner; // might need an empty constructor
 bool FindPath::mPlanningFlag;
 std::vector<Node*> FindPath::mPath;
 int FindPath::mPathLength;
 int FindPath::mPathIterator;
+
+static void planner(
+        double*	map,
+        int collision_thresh,
+        int x_size,
+        int y_size,
+        int robotposeX,
+        int robotposeY,
+        int target_steps,
+        double* target_traj,
+        int targetposeX,
+        int targetposeY,
+        int curr_time,
+        double* action_ptr
+        )
+{    
+    if (curr_time==0) {
+        FindPath::mPlanningFlag = true;
+    }
+
+    FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, target_traj);
+    int goalposeX = (int) target_traj[target_steps-1];
+    int goalposeY = (int) target_traj[target_steps-1+target_steps];
+    pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
+    
+    return;
+}
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray*prhs[])
 {
@@ -81,57 +109,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray*prhs[])
     /* Do the actual planning in a subroutine */
     // planner(map, collision_thresh, x_size, y_size, robotposeX, robotposeY, target_steps, targettrajV, targetposeX, targetposeY, curr_time, &action_ptr[0]);
     
-    if (curr_time==0) {
-        FindPath::mPlanningFlag = true;
-    }
 
-    FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, targettrajV);
-    pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
+    planner(map, collision_thresh, x_size, y_size, robotposeX, robotposeY, target_steps, targettrajV, targetposeX, targetposeY, curr_time, &action_ptr[0]);
+    
     // printf("DONE PLANNING!\n");
     return;   
 }
 
 
 
-/*
 
-static void planner(
-        double*	map,
-        int collision_thresh,
-        int x_size,
-        int y_size,
-        int robotposeX,
-        int robotposeY,
-        int target_steps,
-        double* target_traj,
-        int targetposeX,
-        int targetposeY,
-        int curr_time,
-        double* action_ptr
-        )
-{    
-    int goalposeX = (int) target_traj[target_steps-1];
-    int goalposeY = (int) target_traj[target_steps-1+target_steps];
-    // for now greedily move towards the final target position,
-    // but this is where you can put your planner
 
-    //  B: to make goalpose dynamic w.r.t time
-    // int goalposeX = (int) target_traj[curr_time-1];
-    // int goalposeY = (int) target_traj[curr_time-1+target_steps];
-
-    int bestX = 0, bestY = 0; // robot will not move if greedy action leads to collision
-    double eps = 1.0;
-    
-    //Initialize start/goal node
-
-    robotposeX = robotposeX + bestX;
-    robotposeY = robotposeY + bestY;
-
-   // 3. publish action(solution)
-    action_ptr[0] = robotposeX;
-    action_ptr[1] = robotposeY;
-    
-    return;
-}
-
-*/

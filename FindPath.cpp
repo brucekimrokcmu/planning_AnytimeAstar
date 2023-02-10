@@ -51,7 +51,7 @@ void FindPath::Execute(int robotposeX,
     // now need to think about time;
     int nextRobotPoseX;
     int nextRobotPoseY;
-    
+
     if (mPathIterator < mPathLength){
         nextRobotPoseX = mPath[mPathIterator]->GetPoseX();
         nextRobotPoseY = mPath[mPathIterator]->GetPoseY();
@@ -130,7 +130,7 @@ std::vector<Node*> FindPath::GetPath(Node goalNode)
         pparent = pparent->GetParent();
         path.emplace_back(pparent);
     }
-    return  path;
+    return path;
 }
 
 
