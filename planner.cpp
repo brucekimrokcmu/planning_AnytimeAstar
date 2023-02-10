@@ -49,8 +49,6 @@ static void planner(
     }
 
     FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, target_traj);
-    int targetposeX = (int) target_traj[target_steps-1+curr_time];
-    int targetposeY = (int) target_traj[target_steps-1+target_steps+curr_time];
     pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
     
     return;

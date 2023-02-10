@@ -23,6 +23,9 @@ void FindPath::Execute(int robotposeX,
 
     if (mPlanningFlag)
     {
+        targetposeX = (int) mtargetTrajectory[mtargetSteps-1+curr_time];
+        targetposeY = (int) mtargetTrajectory[mtargetSteps-1+mtargetSteps+curr_time];
+        
         Node startNode(robotposeX, robotposeY, curr_time);    
         Node goalNode(targetposeX, targetposeY, curr_time);
 
