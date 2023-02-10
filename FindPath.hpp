@@ -8,7 +8,7 @@
 #include "FValueCompare.hpp"
 #include "Node.hpp"
 
-#define NUMOFDIRS 9
+#define NUMOFDIRS 8
 
 class FindPath {
     public:
@@ -53,7 +53,7 @@ class FindPath {
         int mySize;
         int mtargetSteps;
         double* mtargetTrajectory;
-        int mdX[NUMOFDIRS] = {-1, -1, -1,  0,  0,  0,  1, 1, 1};
-        int mdY[NUMOFDIRS] = {-1,  0,  1, -1,  0,  1, -1, 0, 1}; 
+        int mdX[NUMOFDIRS] = {-1, -1, -1,  0,  0,  1, 1, 1};
+        int mdY[NUMOFDIRS] = {-1,  0,  1, -1,  1, -1, 0, 1}; 
 
 };
