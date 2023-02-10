@@ -25,7 +25,7 @@ class FindPath {
         static int mPathLength;
         static int mPathIterator;
         
-        double* Execute(int robotposeX, 
+        std::pair<int, int> Execute(int robotposeX, 
                      int robotposeY,
                      int targetposeX,
                      int targetposeY,

@@ -12,7 +12,7 @@ mtargetTrajectory(target_traj)
 {
 };
 
-double* FindPath::Execute(int robotposeX, 
+std::pair<int, int> FindPath::Execute(int robotposeX, 
                      int robotposeY,
                      int targetposeX,
                      int targetposeY,
@@ -61,17 +61,14 @@ double* FindPath::Execute(int robotposeX,
         mPathIterator++;
     }
     
-    robotposeX = nextRobotPoseX;
-    robotposeY = nextRobotPoseY;
 
-    double nextPose[2];
+    std::pair<int, int> nextPose;
+    nextPose.first = nextRobotPoseX;
+    nextPose.second = nextRobotPoseY;
 
-    nextPose[0] = robotposeX;
-    nextPose[1] = robotposeY;
-    
     curr_time++;
 
-    return &nextPose[0];
+    return nextPose;
 }
 
 void FindPath::AStar(Node startNode, Node goalNode, int currTime, double weight)

@@ -56,12 +56,12 @@ static void planner(
     targetposeX = (int) target_traj[target_steps-1+curr_time];
     targetposeY = (int) target_traj[target_steps-1+target_steps+curr_time];
 
-    double* nextPose = pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
+    std::pair<int, int> nextPose = pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
     
     // at somewhere here, curr_time should be updated. 
 
-    action_ptr[0] = nextPose[0];
-    action_ptr[1] = nextPose[1];
+    action_ptr[0] = nextPose.first;
+    action_ptr[1] = nextPose.second;
 
     return;
 }
@@ -119,7 +119,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray*prhs[])
     /* Do the actual planning in a subroutine */
     // planner(map, collision_thresh, x_size, y_size, robotposeX, robotposeY, target_steps, targettrajV, targetposeX, targetposeY, curr_time, &action_ptr[0]);
     
-
     planner(map, collision_thresh, x_size, y_size, robotposeX, robotposeY, target_steps, targettrajV, targetposeX, targetposeY, curr_time, &action_ptr[0]);
     
     // printf("DONE PLANNING!\n");
