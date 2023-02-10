@@ -12,7 +12,7 @@ mtargetTrajectory(target_traj)
 {
 };
 
-void FindPath::Execute(int robotposeX, 
+double* FindPath::Execute(int robotposeX, 
                      int robotposeY,
                      int targetposeX,
                      int targetposeY,
@@ -69,7 +69,7 @@ void FindPath::Execute(int robotposeX,
     
     curr_time++;
 
-    return;
+    return &action_ptr[0];
 }
 
 void FindPath::AStar(Node startNode, Node goalNode, int currTime, double weight)

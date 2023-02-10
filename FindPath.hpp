@@ -25,7 +25,7 @@ class FindPath {
         static int mPathLength;
         static int mPathIterator;
         
-        void Execute(int robotposeX, 
+        double* Execute(int robotposeX, 
                      int robotposeY,
                      int targetposeX,
                      int targetposeY,
