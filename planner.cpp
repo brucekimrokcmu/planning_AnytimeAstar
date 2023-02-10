@@ -44,6 +44,9 @@ static void planner(
         double* action_ptr
         )
 {    
+    //Let's try to think what input should be given to pathPlanner and what pathPlanner should return 
+    // updated robotpose should be returned from Execute
+    
     if (curr_time==0) {
         FindPath::mPlanningFlag = true;
     }
@@ -53,11 +56,12 @@ static void planner(
     targetposeX = (int) target_traj[target_steps-1+curr_time];
     targetposeY = (int) target_traj[target_steps-1+target_steps+curr_time];
 
-    action_ptr = pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
+    double* nextPose = pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
     
     // at somewhere here, curr_time should be updated. 
 
-
+    action_ptr[0] = nextPose[0];
+    action_ptr[1] = nextPose[1];
 
     return;
 }

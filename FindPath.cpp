@@ -64,12 +64,14 @@ double* FindPath::Execute(int robotposeX,
     robotposeX = nextRobotPoseX;
     robotposeY = nextRobotPoseY;
 
-    action_ptr[0] = robotposeX;
-    action_ptr[1] = robotposeY;
+    double nextPose[2];
+
+    nextPose[0] = robotposeX;
+    nextPose[1] = robotposeY;
     
     curr_time++;
 
-    return &action_ptr[0];
+    return &nextPose[0];
 }
 
 void FindPath::AStar(Node startNode, Node goalNode, int currTime, double weight)
