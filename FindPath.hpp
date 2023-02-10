@@ -20,10 +20,10 @@ class FindPath {
                  int target_steps,
                  double* target_traj);
         
-        static bool mPlanningFlag;
-        static std::vector<Node*> mPath;
-        static int mPathLength;
-        static int mPathIterator;
+        bool mPlanningFlag;
+        std::vector<Node*> mPath;
+        int mPathLength;
+        int mPathIterator;
         
         std::pair<int, int> Execute(int robotposeX, 
                      int robotposeY,

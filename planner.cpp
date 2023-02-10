@@ -23,11 +23,10 @@
 //1-based indexing in matlab (so, robotpose and goalpose are 1-indexed)
 #define GETMAPINDEX(X, Y, XSIZE, YSIZE) ((Y-1)*XSIZE + (X-1))
 
-FindPath pathPlanner;
-bool FindPath::mPlanningFlag;
-std::vector<Node*> FindPath::mPath;
-int FindPath::mPathLength;
-int FindPath::mPathIterator;
+bool g_PlanningFlag;
+std::vector<Node*> g_Path;
+int g_PathLength;
+int g_PathIterator;
 
 static void planner(
         double*	map,
@@ -44,20 +43,28 @@ static void planner(
         double* action_ptr
         )
 {    
-    //Let's try to think what input should be given to pathPlanner and what pathPlanner should return 
-    // updated robotpose should be returned from Execute
-    
+    FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, target_traj);
     if (curr_time==0) {
-        FindPath::mPlanningFlag = true;
+        pathPlanner.mPlanningFlag = true;
+    }
+    else{
+        pathPlanner.mPath = g_Path;
+        pathPlanner.mPathLength = g_PathLength;
+        pathPlanner.mPathIterator = g_PathIterator;
+        // and all the other global
     }
 
-    FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, target_traj);
     // should I update targetpose outside Execute function?
     targetposeX = (int) target_traj[target_steps-1+curr_time];
     targetposeY = (int) target_traj[target_steps-1+target_steps+curr_time];
 
     std::pair<int, int> nextPose = pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
     
+    g_Path = pathPlanner.mPath;
+    g_PathLength = pathPlanner.mPathLength;
+    g_PathIterator = pathPlanner.mPathIterator;
+    
+
     // at somewhere here, curr_time should be updated. 
 
     action_ptr[0] = nextPose.first;
@@ -117,8 +124,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray*prhs[])
     /* Get collision threshold for problem */
     int collision_thresh = (int) mxGetScalar(COLLISION_THRESH);
     /* Do the actual planning in a subroutine */
-    // planner(map, collision_thresh, x_size, y_size, robotposeX, robotposeY, target_steps, targettrajV, targetposeX, targetposeY, curr_time, &action_ptr[0]);
-    
     planner(map, collision_thresh, x_size, y_size, robotposeX, robotposeY, target_steps, targettrajV, targetposeX, targetposeY, curr_time, &action_ptr[0]);
     
     // printf("DONE PLANNING!\n");
