@@ -61,8 +61,11 @@ void FindPath::Execute(int robotposeX,
         mPathIterator++;
     }
     
-    action_ptr[0] = nextRobotPoseX;
-    action_ptr[1] = nextRobotPoseY;
+    robotposeX = nextRobotPoseX;
+    robotposeY = nextRobotPoseY;
+
+    action_ptr[0] = robotposeX;
+    action_ptr[1] = robotposeY;
     
     curr_time++;
 
