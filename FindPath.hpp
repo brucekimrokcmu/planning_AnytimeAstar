@@ -44,7 +44,7 @@ class FindPath {
 
         // double ComputeGValue(Node startNode, Node node, int currTime);
         double ComputeEuclideanHeuristics(Node* pnode, Node* pgoalNode); //CHECKED
-        double ComputeFValue(Node* pnode, double eps); //CHECKED
+        double ComputeFValue(Node* pnode, double weight); //CHECKED
         void ComputeDijkstraHeuristics(Node* pcurrNode); 
 
     private:

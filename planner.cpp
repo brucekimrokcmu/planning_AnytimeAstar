@@ -61,7 +61,7 @@ static void planner(
     Node goalNode(goalposeX, goalposeY, curr_time);
     FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, target_traj);
     Node* pstartNode = &startNode;
-    Node* pgoalNode = &goalNode;
+    Node* pgoalNode = &goalNode;    
     pstartNode->SetGValue(0);
     pstartNode->SetHeuristics(pathPlanner.ComputeEuclideanHeuristics(pstartNode, pgoalNode));
     pstartNode->SetFValue(pathPlanner.ComputeFValue(pstartNode,1));

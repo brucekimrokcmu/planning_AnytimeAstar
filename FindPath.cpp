@@ -78,15 +78,12 @@ void FindPath::AStar(Node* pstartNode, Node* pgoalNode, int currTime, double wei
     std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
     std::unordered_map<int, Node*> closedList;
     
-    // OPEN = {s_start}; 
     openList.push(pstartNode); 
-    // while(s_goal is not expanded && OPEN!=0){ 
+
     while((closedList.find(GetNodeIndex(pgoalNode)) == closedList.end()) && (!openList.empty())) {
-        
-        //  remove s with the smallest [f(s)=g(s)+h(s)] from OPEN;
         Node* topNode = openList.top();  
+        printf("topnode: %p;\n", topNode);
         openList.pop();
-        //  insert s into CLOSED;
         closedList[GetNodeIndex(topNode)] = topNode;
         
         int newX = topNode->GetPoseX();
@@ -97,7 +94,7 @@ void FindPath::AStar(Node* pstartNode, Node* pgoalNode, int currTime, double wei
             newY += mdY[dir];
             int newIndex = GetIndexFromPose(newX, newY);
             Node succNode(newX, newY, currTime);
-            Node *psuccNode = &succNode;
+            Node* psuccNode = &succNode;
             // printf("succnode pose: %d %d;\n", psuccNode->GetPoseX(), psuccNode->GetPoseY());
             psuccNode->SetHeuristics(ComputeEuclideanHeuristics(psuccNode, pgoalNode));
 
@@ -107,20 +104,21 @@ void FindPath::AStar(Node* pstartNode, Node* pgoalNode, int currTime, double wei
                     psuccNode->SetGValue(topNode->GetGValue()+mmap[newIndex]);
                     psuccNode->SetFValue(ComputeFValue(psuccNode, weight));                
                     psuccNode->SetParent(topNode);
+                    openList.push(psuccNode);
                     // double succNode_Fval = psuccNode->GetFValue();
                     // printf("succNodeFval: %f;\n", succNode_Fval);
-                    openList.push(psuccNode);
-                    double fvalue = openList.top()->GetFValue();
-                    printf("opentop fval: %f;\n", fvalue);
+                    // double fvalue = openList.top()->GetFValue();
+                    // printf("opentop fval: %f;\n", fvalue);
                     // int size = openList.size();
                     // printf("openlist size is: %d;\n", size);
                 }    
             } else { // If visited
                 // printf("Already visited.\n");
                 Node* pexistingNode = closedList[newIndex];
-                if(pexistingNode->GetFValue() > mmap[newIndex]+weight*psuccNode->GetHeuristics()){
-                    closedList[newIndex] = psuccNode;
+                if(pexistingNode->GetFValue() > topNode->GetGValue()+mmap[newIndex]+weight*(psuccNode->GetHeuristics())){
+                    psuccNode->SetGValue(topNode->GetGValue()+mmap[newIndex]);
                     psuccNode->SetParent(topNode);
+                    closedList[newIndex] = psuccNode;
                     openList.push(psuccNode);
                     // double fvalue = openList.top()->GetFValue();
                     // printf("existing opentop fval: %f;\n", fvalue);
@@ -128,7 +126,7 @@ void FindPath::AStar(Node* pstartNode, Node* pgoalNode, int currTime, double wei
                 }
             }
         }
-        
+
         // while(!openList.empty()){
         //     int fvalue = openList.top()->GetFValue();
         //     printf("fval: %d;\n", fvalue);
@@ -208,9 +206,9 @@ double FindPath::ComputeEuclideanHeuristics(Node* pnode, Node* pgoalNode)
     return euclideanHeuristics;
 }
 
-double FindPath::ComputeFValue(Node* pnode, double eps)
+double FindPath::ComputeFValue(Node* pnode, double weight)
 {
-    double fValue = pnode->GetGValue() + pnode->GetHeuristics()*eps;
+    double fValue = pnode->GetGValue() + pnode->GetHeuristics()*weight;
     
     return fValue;
 }
