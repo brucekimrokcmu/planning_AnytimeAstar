@@ -55,25 +55,33 @@ static void planner(
     int goalposeY = (int) target_traj[target_steps-1+target_steps];
     // printf("robot: %d %d;\n", robotposeX, robotposeY);
     // printf("goal: %d %d;\n", goalposeX, goalposeY);
-    
-    Node startNode(robotposeX, robotposeY, curr_time);
-    // printf("robot pose: %d %d;\n", startNode.GetPoseX(), startNode.GetPoseY());
-    Node goalNode(goalposeX, goalposeY, curr_time);
-    FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, target_traj);
-    Node* pstartNode = &startNode;
-    Node* pgoalNode = &goalNode;    
-    pstartNode->SetGValue(0);
-    pstartNode->SetHeuristics(pathPlanner.ComputeEuclideanHeuristics(pstartNode, pgoalNode));
-    pstartNode->SetFValue(pathPlanner.ComputeFValue(pstartNode,1));
+
+    for (int i=0; i<5; i++){
+        Node startNode(robotposeX+i, robotposeY+i, curr_time);
+        Node* pstartNode = &startNode;
+        // printf("robot pose: %d %d;\n", startNode.GetPoseX(), startNode.GetPoseY());
+        printf("address is: %p;\n", pstartNode);
+    }
 
 
+    // Node goalNode(goalposeX, goalposeY, curr_time);
+    // // printf("robot2 pose: %d %d;\n", startNode.GetPoseX(), startNode.GetPoseY());
+    // FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, target_traj);
+    // Node* pstartNode = &startNode;
+    // Node* pgoalNode = &goalNode;    
+    // pstartNode->SetGValue(0);
+    // pstartNode->SetHeuristics(pathPlanner.ComputeEuclideanHeuristics(pstartNode, pgoalNode));
+    // pstartNode->SetFValue(pathPlanner.ComputeFValue(pstartNode,1));
+    // printf("pstart G H F %f %f %f;\n", pstartNode->GetGValue(), pstartNode->GetHeuristics(), pstartNode->GetFValue());
+    // printf("pgoal G H F %f %f %f;\n", pgoalNode->GetGValue(), pgoalNode->GetHeuristics(), pgoalNode->GetFValue());
     // while(!openList.empty()){
     //     int fvalue = openList.top()->GetFValue();
     //     printf("fval: %d;\n", fvalue);
     //     openList.pop();
     // }
 
-    pathPlanner.AStar(pstartNode, pgoalNode, curr_time, 1);
+
+    // pathPlanner.AStar(pstartNode, pgoalNode, curr_time, 1);
     
     // std::vector<Node*> path = pathPlanner.GetPath(pgoalNode);
 
