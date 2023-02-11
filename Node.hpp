@@ -2,7 +2,7 @@
 
 class Node{
     public:
-        Node();
+        // Node();
         Node(int poseX, int poseY, int currTime);
         
         int GetPoseX() const;

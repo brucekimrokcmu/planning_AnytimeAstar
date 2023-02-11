@@ -28,6 +28,8 @@ std::vector<Node*> g_Path;
 int g_PathLength;
 int g_PathIterator;
 
+bool flag=true;
+
 static void planner(
         double*	map,
         int collision_thresh,
@@ -43,32 +45,73 @@ static void planner(
         double* action_ptr
         )
 {    
+    int dX[NUMOFDIRS] = {-1, -1, -1,  0,  0,  1, 1, 1};
+    int dY[NUMOFDIRS] = {-1,  0,  1, -1,  1, -1, 0, 1};
+    
+    // for now greedily move towards the final target position,
+    // but this is where you can put your planner
+
+    int goalposeX = (int) target_traj[target_steps-1];
+    int goalposeY = (int) target_traj[target_steps-1+target_steps];
+    // printf("robot: %d %d;\n", robotposeX, robotposeY);
+    // printf("goal: %d %d;\n", goalposeX, goalposeY);
+    
+    Node startNode(robotposeX, robotposeY, curr_time);
+    // printf("robot pose: %d %d;\n", startNode.GetPoseX(), startNode.GetPoseY());
+    Node goalNode(goalposeX, goalposeY, curr_time);
     FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, target_traj);
-    if (curr_time==0) {
-        pathPlanner.mPlanningFlag = true;
-    }
-    else{
-        pathPlanner.mPath = g_Path;
-        pathPlanner.mPathLength = g_PathLength;
-        pathPlanner.mPathIterator = g_PathIterator;
-        // and all the other global
-    }
+    Node* pstartNode = &startNode;
+    Node* pgoalNode = &goalNode;
+    pstartNode->SetGValue(0);
+    pstartNode->SetHeuristics(pathPlanner.ComputeEuclideanHeuristics(pstartNode, pgoalNode));
+    pstartNode->SetFValue(pathPlanner.ComputeFValue(pstartNode,1));
 
-    // should I update targetpose outside Execute function?
-    targetposeX = (int) target_traj[target_steps-1+curr_time];
-    targetposeY = (int) target_traj[target_steps-1+target_steps+curr_time];
 
-    std::pair<int, int> nextPose = pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
+    // while(!openList.empty()){
+    //     int fvalue = openList.top()->GetFValue();
+    //     printf("fval: %d;\n", fvalue);
+    //     openList.pop();
+    // }
+
+    pathPlanner.AStar(pstartNode, pgoalNode, curr_time, 1);
     
-    g_Path = pathPlanner.mPath;
-    g_PathLength = pathPlanner.mPathLength;
-    g_PathIterator = pathPlanner.mPathIterator;
+    // std::vector<Node*> path = pathPlanner.GetPath(pgoalNode);
+
+    // printf("path size: %d;\n", path.size());
+
+    // printf("----------------------PRINTING PATH-------------------\n");
+    // for(int i=0; i<path.size(); i++){
+    //     printf("%p;\n", path[i]);
+    // }
     
+    // printf("----------------------END PATH------------------------\n");
 
-    // at somewhere here, curr_time should be updated. 
+    int bestX = 0, bestY = 0; // robot will not move if greedy action leads to collision
+    // double olddisttotarget = (double)sqrt(((robotposeX-goalposeX)*(robotposeX-goalposeX) + (robotposeY-goalposeY)*(robotposeY-goalposeY)));
+    // double disttotarget;
+    // for(int dir = 0; dir < NUMOFDIRS; dir++)
+    // {
+    //     int newx = robotposeX + dX[dir];
+    //     int newy = robotposeY + dY[dir];
 
-    action_ptr[0] = nextPose.first;
-    action_ptr[1] = nextPose.second;
+    //     if (newx >= 1 && newx <= x_size && newy >= 1 && newy <= y_size)
+    //     {
+    //         if (((int)map[GETMAPINDEX(newx,newy,x_size,y_size)] >= 0) && ((int)map[GETMAPINDEX(newx,newy,x_size,y_size)] < collision_thresh))  //if free
+    //         {
+    //             disttotarget = (double)sqrt(((newx-goalposeX)*(newx-goalposeX) + (newy-goalposeY)*(newy-goalposeY)));
+    //             if(disttotarget < olddisttotarget)
+    //             {
+    //                 olddisttotarget = disttotarget;
+    //                 bestX = dX[dir];
+    //                 bestY = dY[dir];
+    //             }
+    //         }
+    //     }
+    // }
+    robotposeX = robotposeX + bestX;
+    robotposeY = robotposeY + bestY;
+    action_ptr[0] = robotposeX;
+    action_ptr[1] = robotposeY;
 
     return;
 }

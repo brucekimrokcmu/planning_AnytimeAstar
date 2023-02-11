@@ -1,6 +1,8 @@
 #pragma once
 
+#include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <math.h>
 #include <unordered_map>
 #include <queue>
@@ -8,7 +10,7 @@
 #include "FValueCompare.hpp"
 #include "Node.hpp"
 
-#define NUMOFDIRS 8
+#define NUMOFDIRS 9
 
 class FindPath {
     public:
@@ -32,19 +34,18 @@ class FindPath {
                      int curr_time,
                      double* action_ptr);                    
 
-        void AStar(Node startNode, Node goalNode, int currTime, double eps);
+        void AStar(Node* pstartNode, Node* pgoalNode, int currTime, double eps);
         // void AStarwithDijkstra(Node startNode, Node goalNode, int currTime);
-        std::vector<Node*> GetPath(Node goalNode);
+        std::vector<Node*> GetPath(Node* pgoalNode);
 
-        int GetNodeIndex(Node node);
-        int GetIndexFromPose(int x, int y);
-        bool IsCellValid(Node node);
-        bool IsVisited(std::unordered_map<int, Node*> list, int index);
+        int GetNodeIndex(Node* pnode); //CHECKED
+        int GetIndexFromPose(int x, int y); //CHECKED
+        bool IsCellValid(Node* pnode); //CHECKED
 
         // double ComputeGValue(Node startNode, Node node, int currTime);
-        double ComputeEuclideanHeuristics(Node node, Node goalNode);
-        double ComputeFValue(Node node, double eps);
-        void ComputeDijkstraHeuristics(Node currNode);
+        double ComputeEuclideanHeuristics(Node* pnode, Node* pgoalNode); //CHECKED
+        double ComputeFValue(Node* pnode, double eps); //CHECKED
+        void ComputeDijkstraHeuristics(Node* pcurrNode); 
 
     private:
         double *mmap;
@@ -53,7 +54,7 @@ class FindPath {
         int mySize;
         int mtargetSteps;
         double* mtargetTrajectory;
-        int mdX[NUMOFDIRS] = {-1, -1, -1,  0,  0,  1, 1, 1};
-        int mdY[NUMOFDIRS] = {-1,  0,  1, -1,  1, -1, 0, 1}; 
+        int mdX[NUMOFDIRS] = {-1, -1, -1,  0, 0,  0,  1, 1, 1};
+        int mdY[NUMOFDIRS] = {-1,  0,  1, -1, 0,  1, -1, 0, 1}; 
 
 };

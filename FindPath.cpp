@@ -19,136 +19,155 @@ std::pair<int, int> FindPath::Execute(int robotposeX,
                      int curr_time,
                      double* action_ptr)
 {
-    double weight = 1.0;
+    // double weight = 1.0;
 
-    if (mPlanningFlag)
-    {
+    // if (mPlanningFlag)
+    // {
         
-        Node startNode(robotposeX, robotposeY, curr_time);  
-        // this doesn't take account of goalpose changes w.r.t. time changes  
-        // Let's first assume that goal pose is stationary and try to debug
-        Node goalNode(targetposeX, targetposeY, curr_time); 
+    //     Node startNode(robotposeX, robotposeY, curr_time);  
+    //     // this doesn't take account of goalpose changes w.r.t. time changes  
+    //     // Let's first assume that goal pose is stationary and try to debug
+    //     Node goalNode(targetposeX, targetposeY, curr_time); 
 
-        // Compute heuristics
-        if (IsCellValid(startNode)) {
-            startNode.SetGValue(0.0);
-            startNode.SetHeuristics(ComputeEuclideanHeuristics(startNode, goalNode));
-            startNode.SetFValue(ComputeFValue(startNode, weight));
-        }
+    //     // Compute heuristics
+    //     if (IsCellValid(startNode)) {
+    //         startNode.SetGValue(0.0);
+    //         startNode.SetHeuristics(ComputeEuclideanHeuristics(startNode, goalNode));
+    //         startNode.SetFValue(ComputeFValue(startNode, weight));
+    //     }
 
-        if (IsCellValid(goalNode)){
-            startNode.SetGValue(mmap[GetNodeIndex(goalNode)]);
-            startNode.SetHeuristics(ComputeEuclideanHeuristics(goalNode, goalNode));
-            startNode.SetFValue(ComputeFValue(goalNode, weight));
-        }
+    //     if (IsCellValid(goalNode)){
+    //         startNode.SetGValue(mmap[GetNodeIndex(goalNode)]);
+    //         startNode.SetHeuristics(ComputeEuclideanHeuristics(goalNode, goalNode));
+    //         startNode.SetFValue(ComputeFValue(goalNode, weight));
+    //     }
 
-        AStar(startNode, goalNode, curr_time, weight);
-        // For AstarwithDijkstra, I will pass DikstraHeuristics as an argument
-        // AStarwithDijkstra()
-        mPath = GetPath(goalNode);
-        mPathLength = mPath.size();
-        mPathIterator = 0;
-        mPlanningFlag = false;
+    //     AStar(startNode, goalNode, curr_time, weight);
+    //     // For AstarwithDijkstra, I will pass DikstraHeuristics as an argument
+    //     // AStarwithDijkstra()
+
+    //     Node* pgoalNode = &goalNode;
+    //     mPath = GetPath(pgoalNode);
+    //     mPathLength = mPath.size();
+    //     mPathIterator = 0;
+    //     mPlanningFlag = false;
     
-    } 
-    // now need to think about time;
-    int nextRobotPoseX;
-    int nextRobotPoseY;
+    // } 
+    // // now need to think about time;
+    // int nextRobotPoseX;
+    // int nextRobotPoseY;
 
-    if (mPathIterator < mPathLength){
-        nextRobotPoseX = mPath[mPathIterator]->GetPoseX();
-        nextRobotPoseY = mPath[mPathIterator]->GetPoseY();
-        mPathIterator++;
-    }
+    // if (mPathIterator < mPathLength){
+    //     nextRobotPoseX = mPath[mPathIterator]->GetPoseX();
+    //     nextRobotPoseY = mPath[mPathIterator]->GetPoseY();
+    //     mPathIterator++;
+    // }
     
 
     std::pair<int, int> nextPose;
-    nextPose.first = nextRobotPoseX;
-    nextPose.second = nextRobotPoseY;
+    nextPose.first = 1;//nextRobotPoseX;
+    nextPose.second =1;// nextRobotPoseY;
 
-    curr_time++;
+    // curr_time++;
 
     return nextPose;
 }
 
-void FindPath::AStar(Node startNode, Node goalNode, int currTime, double weight)
+void FindPath::AStar(Node* pstartNode, Node* pgoalNode, int currTime, double weight)
 {
     std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
     std::unordered_map<int, Node*> closedList;
     
     // OPEN = {s_start}; 
-    openList.push(&startNode); 
-
+    openList.push(pstartNode); 
     // while(s_goal is not expanded && OPEN!=0){ 
-    while((!IsVisited(closedList, GetNodeIndex(goalNode))) && (!openList.empty())) {
-        //  remove s with the smallest [f(s)=g(s)+h(s)] from OPEN;
-        //  insert s into CLOSED;
-        Node* topNode = openList.top(); 
-        closedList[GetNodeIndex(*topNode)] = topNode;
-        openList.pop();
+    while((closedList.find(GetNodeIndex(pgoalNode)) == closedList.end()) && (!openList.empty())) {
         
+        //  remove s with the smallest [f(s)=g(s)+h(s)] from OPEN;
+        Node* topNode = openList.top();  
+        openList.pop();
+        //  insert s into CLOSED;
+        closedList[GetNodeIndex(topNode)] = topNode;
+        
+        int newX = topNode->GetPoseX();
+        int newY = topNode->GetPoseY();
         //  for every successor s' of s such that s' not in CLOSED;  
         for (int dir=0; dir<NUMOFDIRS; dir++){ // need to calculate time, which increases by +1
-            int newX = topNode->GetPoseX() + mdX[dir];
-            int newY = topNode->GetPoseY() + mdY[dir];
+            newX += mdX[dir];
+            newY += mdY[dir];
             int newIndex = GetIndexFromPose(newX, newY);
-            
-            if (IsVisited(closedList, newIndex)){ 
-                // If visited & g_value and heuristics should be updated, update and push to open list
-                Node* existingNode = closedList[newIndex];
-                if (existingNode->GetGValue() > topNode->GetGValue()+mmap[newIndex]){
-                    existingNode->SetGValue(topNode->GetGValue()+mmap[newIndex]);
-                    existingNode->SetHeuristics(ComputeEuclideanHeuristics(*existingNode, goalNode));
-                    existingNode->SetFValue(ComputeFValue(*existingNode, weight));
-                    existingNode->SetParent(topNode);
-                    openList.push(existingNode); 
+            Node succNode(newX, newY, currTime);
+            Node *psuccNode = &succNode;
+            // printf("succnode pose: %d %d;\n", psuccNode->GetPoseX(), psuccNode->GetPoseY());
+            psuccNode->SetHeuristics(ComputeEuclideanHeuristics(psuccNode, pgoalNode));
+
+            if (closedList.find(newIndex) == closedList.end()){ // If NOT visited    
+                // printf("Not Visited.\n");
+                if (psuccNode->GetGValue()> topNode->GetGValue()+mmap[newIndex]){
+                    psuccNode->SetGValue(topNode->GetGValue()+mmap[newIndex]);
+                    psuccNode->SetFValue(ComputeFValue(psuccNode, weight));                
+                    psuccNode->SetParent(topNode);
+                    // double succNode_Fval = psuccNode->GetFValue();
+                    // printf("succNodeFval: %f;\n", succNode_Fval);
+                    openList.push(psuccNode);
+                    double fvalue = openList.top()->GetFValue();
+                    printf("opentop fval: %f;\n", fvalue);
+                    // int size = openList.size();
+                    // printf("openlist size is: %d;\n", size);
+                }    
+            } else { // If visited
+                // printf("Already visited.\n");
+                Node* pexistingNode = closedList[newIndex];
+                if(pexistingNode->GetFValue() > mmap[newIndex]+weight*psuccNode->GetHeuristics()){
+                    closedList[newIndex] = psuccNode;
+                    psuccNode->SetParent(topNode);
+                    openList.push(psuccNode);
+                    // double fvalue = openList.top()->GetFValue();
+                    // printf("existing opentop fval: %f;\n", fvalue);
+                    // printf("Pushed to open list.***\n\n");   
                 }
-            } else {
-                // If not visited -> create a node
-                Node succNode(newX, newY, currTime);
-                succNode.SetHeuristics(ComputeEuclideanHeuristics(succNode, goalNode)); 
-                // if it's not going to be pushed into openlist, do I even need to compute and sset heuristics?
-
-
-                // if g(s') > g(s) + c(s, s')
-                //     g(s') = g(s) + c(s, s')
-                //     insert s' into OPEN
-                    if (succNode.GetGValue() > topNode->GetGValue()+mmap[newIndex]){
-                        succNode.SetGValue(topNode->GetGValue()+mmap[newIndex]);
-                        succNode.SetHeuristics(ComputeEuclideanHeuristics(succNode, goalNode));
-                        succNode.SetFValue(ComputeFValue(succNode, weight));
-                        succNode.SetParent(topNode);
-                        openList.push(&succNode);
-                    }
             }
         }
-    } 
+        
+        // while(!openList.empty()){
+        //     int fvalue = openList.top()->GetFValue();
+        //     printf("fval: %d;\n", fvalue);
+        //     openList.pop();
+        // }
 
+    } 
+    // printf("Size of closed list: %d;\n", closedList.size());
+    // printf("Astar Complete\n");
     return;
 }
 
-void AStarwithDijkstra(Node startNode, Node goalNode, int currTime)
-{
-}
+// void FindPath::AStarwithDijkstra(Node startNode, Node goalNode, int currTime)
+// {
+// }
 
-std::vector<Node*> FindPath::GetPath(Node goalNode)
+std::vector<Node*> FindPath::GetPath(Node* pgoalNode)
 {
     std::vector<Node*> path;
-    path.emplace_back(&goalNode);
 
-    Node* pparent = goalNode.GetParent();
+    path.emplace_back(pgoalNode);
+
+    Node* pparent = pgoalNode->GetParent();
     while(pparent != nullptr){
         pparent = pparent->GetParent();
         path.emplace_back(pparent);
     }
+    std::reverse(path.begin(), path.end());
     return path;
 }
 
 
-int FindPath::GetNodeIndex(Node node)
+int FindPath::GetNodeIndex(Node* pnode)
 {
-    int x = node.GetPoseX();
-    int y = node.GetPoseY();
+    // if(!IsCellValid(node)){
+    //     return
+    // }
+    int x = pnode->GetPoseX();
+    int y = pnode->GetPoseY();
     return ((y-1)*mxSize + (x-1));
 }
 
@@ -157,24 +176,18 @@ int FindPath::GetIndexFromPose(int x, int y)
     return ((y-1)*mxSize + (x-1));
 }
 
-bool FindPath::IsCellValid(Node node)
+bool FindPath::IsCellValid(Node* pnode)
 {
-    int x = node.GetPoseX();
-    int y = node.GetPoseY();
+    int x = pnode->GetPoseX();
+    int y = pnode->GetPoseY();
 
     if (x >= 1 && x <= mxSize && y >= 1 && y <= mySize) {
-        int index = GetNodeIndex(node);
+        int index = GetIndexFromPose(x,y);
         if (((int)mmap[index] >= 0) && ((int)mmap[index] < mcollisionThresh)) {
             return true;
         }
     }
     return false;
-}
-
-bool FindPath::IsVisited(std::unordered_map<int, Node*> list, int index)
-{
-    if (list.find(index) == list.end()) {return false;} 
-    return true;
 }
 
 // double FindPath::ComputeGValue(Node startNode, Node node, int currTime)
@@ -183,21 +196,21 @@ bool FindPath::IsVisited(std::unordered_map<int, Node*> list, int index)
 //     return gValue;
 // }
 
-double FindPath::ComputeEuclideanHeuristics(Node node, Node goalNode)
+double FindPath::ComputeEuclideanHeuristics(Node* pnode, Node* pgoalNode)
 {
-    int goalX = goalNode.GetPoseX();
-    int goalY = goalNode.GetPoseY();
-    int x = node.GetPoseX();
-    int y = node.GetPoseY();
+    int goalX = pgoalNode->GetPoseX();
+    int goalY = pgoalNode->GetPoseY();
+    int x = pnode->GetPoseX();
+    int y = pnode->GetPoseY();
 
-    double heuristics = (double)std::sqrt(((goalX - x)*(goalX-x) + (goalY - y)*(goalY-y)));
+    double euclideanHeuristics = (double)std::sqrt(((goalX - x)*(goalX-x) + (goalY - y)*(goalY-y)));
 
-    return heuristics;
+    return euclideanHeuristics;
 }
 
-double FindPath::ComputeFValue(Node node, double eps)
+double FindPath::ComputeFValue(Node* pnode, double eps)
 {
-    double fValue = node.GetGValue() + node.GetHeuristics()*eps;
+    double fValue = pnode->GetGValue() + pnode->GetHeuristics()*eps;
     
     return fValue;
 }
@@ -206,7 +219,7 @@ double FindPath::ComputeFValue(Node node, double eps)
 // solve 2D(x,y) and use that as heuristics for higher dimension
 // so you would use Dijkstra at 2D and use that as heuristics for 3D
 
-void FindPath::ComputeDijkstraHeuristics(Node currNode)
+void FindPath::ComputeDijkstraHeuristics(Node* pcurrNode)
 {
  // Implement Backward Dijkstra
  // while(!openList.empty()) 

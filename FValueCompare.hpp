@@ -10,7 +10,7 @@ class FValueCompare{
             // double fValueNode2 = node2.GetFValue();
             double fValueNode2 = node2->GetFValue();
 
-            if ((fValueNode1) <= (fValueNode2)) {
+            if ((fValueNode1) >= (fValueNode2)) {
                 return true;
             } else {
                 return false;

@@ -1,14 +1,14 @@
 #include "Node.hpp"
 #include <limits>
 
-Node::Node()  
-{    
-};
+// Node::Node()  
+// {    
+// };
 
 Node::Node(int poseX, int poseY, int currTime) 
     : mX(poseX), mY(poseY), mT(currTime),
-    mF(0), mG(std::numeric_limits<double>::infinity()), mH(0), mpParent(nullptr)
-    // mbClosed(false), mbExpanded(false)
+    // mF(0), mG(std::numeric_limits<double>::infinity()), mH(0), mpParent(nullptr)
+    mF(0), mG(1000000.0), mH(0), mpParent(nullptr)
 {        
 };
 // Pose, Time
