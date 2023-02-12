@@ -137,7 +137,7 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
             
             } 
             else {
-                printf("Invalid Cell.\n");
+                // printf("Invalid Cell.\n");
                 continue;
             }
         }
