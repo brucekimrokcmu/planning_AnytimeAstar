@@ -48,7 +48,7 @@ static void planner(
 
     std::unique_ptr<FindPath> pathPlanner(new FindPath(map, collision_thresh, x_size, y_size, target_steps, target_traj));
     std::pair<int, int> nextPose = pathPlanner->Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
-
+    // printf("Execute returns the nextpose;\n");
 
     robotposeX = nextPose.first;
     robotposeY = nextPose.second;
@@ -56,7 +56,7 @@ static void planner(
     action_ptr[0] = robotposeX;
     action_ptr[1] = robotposeY;
 
-
+    // printf("stored into action ptr?;\n");
     return;
 }
 

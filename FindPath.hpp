@@ -61,7 +61,7 @@ class FindPath {
         void IncreasePathIterator() {mPathIterator++;};
 
         // Algorithms
-        std::pair<int, int> AStar(Node startNode, Node goalNode, int currTime);
+        std::vector<std::pair<int, int>> AStar(Node startNode, Node goalNode, int currTime);
         // void AStarwithDijkstra(Node startNode, Node goalNode, int currTime);
         std::vector<Node*> GetOptimalPath(Node* pgoalNode);
 
