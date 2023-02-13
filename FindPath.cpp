@@ -341,6 +341,7 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
                 continue;
             }
         }
+        delete pgoalNode;
 
     }
 
