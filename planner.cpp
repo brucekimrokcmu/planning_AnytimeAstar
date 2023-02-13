@@ -53,6 +53,7 @@ static void planner(
 
     std::unique_ptr<FindPath> pathPlanner(new FindPath(map, collision_thresh, x_size, y_size, target_steps, target_traj));
     // std::pair<int, int> nextPose = pathPlanner->ExecuteAStar(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
+    printf("Start execution\n");
     std::pair<int, int> nextPose = pathPlanner->ExecuteAStar2DDijkstra(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
     // FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, target_traj);
     // std::pair<int, int> nextPose = pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);

@@ -58,17 +58,25 @@ std::pair<int, int> FindPath::ExecuteAStar2DDijkstra(
                      double* action_ptr)
 
 {
-    double weight = 1.0;
+
     Node startNode(robotposeX, robotposeY, curr_time);  
     Node goalNode(targetposeX, targetposeY, curr_time); 
 
+    if (!IsCellValid(startNode) || !IsCellValid(goalNode)) {
+        printf("NODE INVALID");
+    }
+    printf("running 2D Dijkstra;\n");
     std::unordered_map<int, double> heuristicsTable = Get2DDijkstraHeuristicsTable(startNode, goalNode, curr_time);
+    printf("heuritics table created\n");
     std::unordered_map<int, double>* pheuristicsTable = &heuristicsTable;
+    printf("pointer to heuritics table created\n");
     std::vector<std::pair<int, int>> path = AStarwith2DDijkstra(startNode, goalNode, curr_time, pheuristicsTable);
+    printf("Astar ran\n");
     std::pair<int, int> nextPose = std::make_pair(path[1].first, path[1].second);
+    printf("returning pose\n");
 
     return nextPose;
-
+     
 }
 
 std::vector<std::pair<int, int>> FindPath::AStarwith2DDijkstra(Node startNode, Node goalNode, int currTime, std::unordered_map<int, double>* pheuristicsTable)
@@ -81,8 +89,11 @@ std::vector<std::pair<int, int>> FindPath::AStarwith2DDijkstra(Node startNode, N
     double weight = 1.0;    
     Node* pstartNode = new Node(startNode);
     pstartNode->SetGValue(0);
+    printf("set pstartnode gval as 0\n");
     pstartNode->SetHeuristics((*pheuristicsTable)[GetNodeIndex(pstartNode)]);
+    printf("set pstartnode heuristics according to heuristics table\n");
     pstartNode->SetFValue(ComputeFValue(pstartNode->GetGValue(), pstartNode->GetHeuristics(), weight));
+    printf("initializd startnode\n");
     openList.push(pstartNode); 
     
     while((closedList.find(GetNodeIndex(goalNode)) == closedList.end()) && (!openList.empty())) {
@@ -324,26 +335,30 @@ std::unordered_map<int, double> FindPath::Get2DDijkstraHeuristicsTable(Node star
 
     Node* pstartNode = new Node(startNode);
     pstartNode->SetGValue(0);
+    pstartNode->SetHeuristics(0);
+    pstartNode->SetFValue(ComputeFValue(pstartNode->GetGValue(), pstartNode->GetHeuristics(), 0));
     openList.push(pstartNode); 
-    
+    printf("push startnode to openlist;\n");
     while((!openList.empty())) {
         Node* pparentNode = openList.top();  
         openList.pop();
         visitedList[GetNodeIndex(pstartNode)] = pstartNode;
         closedList[GetNodeIndex(*pparentNode)] = pparentNode;
-        
         for (int dir=0; dir<NUMOFDIRS; dir++){ 
             int newX = pparentNode->GetPoseX() + mdX[dir];
             int newY = pparentNode->GetPoseY() + mdY[dir];
             int newIndex = GetIndexFromPose(newX, newY);
+            
             Node* psuccNode = new Node(newX, newY, currTime+1);
+            printf("creating succ node\n");
             if (IsCellValid(psuccNode)) {
                 if (visitedList.find(newIndex) != visitedList.end()){ // If visited 
                     if (closedList.find(newIndex) != closedList.end()){  //If inside the closde list
                     Node* pexistingNode = closedList.at(newIndex);
                         if(pexistingNode->GetGValue() > pparentNode->GetGValue()+mmap[newIndex]){
                             psuccNode->SetGValue(pparentNode->GetGValue()+mmap[newIndex]);
-                            psuccNode->SetHeuristics(psuccNode->GetGValue());
+                            psuccNode->SetHeuristics(0);
+                            psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(),0));
                             psuccNode->SetParent(pparentNode);
                             openList.push(psuccNode);
                         }      
@@ -352,7 +367,8 @@ std::unordered_map<int, double> FindPath::Get2DDijkstraHeuristicsTable(Node star
                     visitedList[newIndex]=psuccNode;
                     if (psuccNode->GetGValue()> pparentNode->GetGValue()+mmap[newIndex]){
                         psuccNode->SetGValue(pparentNode->GetGValue()+mmap[newIndex]);              
-                        psuccNode->SetHeuristics(psuccNode->GetGValue());  
+                        psuccNode->SetHeuristics(0);
+                        psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(),0));  
                         psuccNode->SetParent(pparentNode);
                         openList.push(psuccNode);
                     } 
@@ -365,6 +381,7 @@ std::unordered_map<int, double> FindPath::Get2DDijkstraHeuristicsTable(Node star
         }
 
         if (closedList.find(GetNodeIndex(goalNode)) != closedList.end()) {
+            printf("goal is found");
             goalNode.SetParent(pparentNode);
 
             Node* p = goalNode.GetParent();
@@ -382,7 +399,7 @@ std::unordered_map<int, double> FindPath::Get2DDijkstraHeuristicsTable(Node star
     while (!openList.empty()){
         openList.pop(); // deallocates memory
     }
-    
+    printf("D* ran;\n");
     return heuristicsTable;
 }
 
