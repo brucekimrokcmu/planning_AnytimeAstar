@@ -33,7 +33,7 @@ class FindPath {
                      int curr_time,
                      double* action_ptr);                    
 
-        std::pair<int, int> FindPath::ExecuteAStar2DDijkstra(
+        std::pair<int, int> ExecuteAStar2DDijkstra(
                      int robotposeX, 
                      int robotposeY,
                      int targetposeX,
