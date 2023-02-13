@@ -1,11 +1,11 @@
 #pragma once
 
 #include <algorithm>
+#include <chrono>
 #include <iostream>
 #include <iterator>
 #include <math.h>
 #include <memory>
-
 #include <unordered_map>
 #include <queue>
 #include <vector>
@@ -62,7 +62,7 @@ class FindPath {
 
         // Algorithms
         std::vector<std::pair<int, int>> AStar(Node startNode, Node goalNode, int currTime);
-        // void AStarwithDijkstra(Node startNode, Node goalNode, int currTime);
+        // std::vector<std::pair<int, int>> AStarwithDijkstra(Node startNode, Node goalNode, int currTime, std::vector<int> heuristics);
         std::vector<Node*> GetOptimalPath(Node* pgoalNode);
 
         int GetNodeIndex(Node node); //CHECKED
@@ -75,6 +75,6 @@ class FindPath {
         double ComputeEuclideanHeuristics(Node node, Node goalNode); //CHECKED
         double ComputeEuclideanHeuristics(Node* pnode, Node* pgoalNode); //CHECKED
         double ComputeFValue(double gValue, double heuristics, double weight); //CHECKED
-        void ComputeDijkstraHeuristics(Node currNode); 
-
+        // std::vector<int> ComputeDijkstraHeuristics(Node startNode, int currTime); 
+        // int BackwardAStarforDijkstra(Node startNode, Node goalNode, int currTime);
 };
