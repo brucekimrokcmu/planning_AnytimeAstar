@@ -49,13 +49,12 @@ static void planner(
     printf("robot: %d %d;\n", robotposeX, robotposeY);
     printf("target: %d %d;\n", targetposeX, targetposeY);
     // printf("goal: %d %d;\n", goalposeX, goalposeY);
-
     // printf("curr time: %d;\n", curr_time);
 
-    // std::unique_ptr<FindPath> pathPlanner(new FindPath(map, collision_thresh, x_size, y_size, target_steps, target_traj));
-    // std::pair<int, int> nextPose = pathPlanner->Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
-    FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, target_traj);
-    std::pair<int, int> nextPose = pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
+    std::unique_ptr<FindPath> pathPlanner(new FindPath(map, collision_thresh, x_size, y_size, target_steps, target_traj));
+    std::pair<int, int> nextPose = pathPlanner->ExecuteAStar(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
+    // FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, target_traj);
+    // std::pair<int, int> nextPose = pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
     
 
     robotposeX = nextPose.first;
@@ -65,6 +64,25 @@ static void planner(
     action_ptr[1] = robotposeY;
 
     return;
+    /* Only for test
+    FindPath planner;
+    static bool init = false;
+    if (!init) {
+    planner = FindPath(<CONSTRUCTOR>);
+    init = true;
+    }
+    */
+
+   /* 
+    Singleton
+    getSingletonFindpath()->execute()
+    
+    class GetSing....() {
+    
+    return static .....'
+    }
+   */
+
 }
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray*prhs[])

@@ -26,12 +26,21 @@ class FindPath {
         
 
         
-        std::pair<int, int> Execute(int robotposeX, 
+        std::pair<int, int> ExecuteAStar(int robotposeX, 
                      int robotposeY,
                      int targetposeX,
                      int targetposeY,
                      int curr_time,
                      double* action_ptr);                    
+
+        std::pair<int, int> FindPath::ExecuteAStar2DDijkstra(
+                     int robotposeX, 
+                     int robotposeY,
+                     int targetposeX,
+                     int targetposeY,
+                     int curr_time,
+                     double* action_ptr);
+
 
     private:
         // For map information
@@ -62,7 +71,8 @@ class FindPath {
 
         // Algorithms
         std::vector<std::pair<int, int>> AStar(Node startNode, Node goalNode, int currTime);
-        // std::vector<std::pair<int, int>> AStarwithDijkstra(Node startNode, Node goalNode, int currTime, std::vector<int> heuristics);
+        std::vector<std::pair<int, int>> AStarwith2DDijkstra(Node startNode, Node goalNode, int currTime, std::unordered_map<int, double>* pheuristicsTable);
+        std::vector<std::pair<int, int>> AStarwithMultiBackwardDijkstra(Node startNode, Node goalNode, int currTime, std::vector<int> heuristics);        
         std::vector<Node*> GetOptimalPath(Node* pgoalNode);
 
         int GetNodeIndex(Node node); //CHECKED
@@ -71,10 +81,9 @@ class FindPath {
         bool IsCellValid(Node node); //CHECKED
         bool IsCellValid(Node* pnode); 
 
-        // double ComputeGValue(Node startNode, Node node, int currTime);
         double ComputeEuclideanHeuristics(Node node, Node goalNode); //CHECKED
         double ComputeEuclideanHeuristics(Node* pnode, Node* pgoalNode); //CHECKED
         double ComputeFValue(double gValue, double heuristics, double weight); //CHECKED
-        // std::vector<int> ComputeDijkstraHeuristics(Node startNode, int currTime); 
+        std::unordered_map<int, double> Get2DDijkstraHeuristicsTable(Node startNode, Node goalNode, int currTime); 
         // int BackwardAStarforDijkstra(Node startNode, Node goalNode, int currTime);
 };
