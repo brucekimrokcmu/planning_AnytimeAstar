@@ -161,14 +161,24 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
     std::vector<std::pair<int, int>> path;
     std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
     std::unordered_map<int, Node*> closedList;
+    // a separate goallist 
     std::unordered_map<int, Node*> visitedList;
+    
     double weight = 1.0;    
     Node* pstartNode = new Node(startNode);
     openList.push(pstartNode); 
-    
+
+    // update goal at here? 
+    // check time -> extract goal from the trajectory
+    // I can also check the elapsed time running AStar and add that to goal time.
+
     while((closedList.find(GetNodeIndex(goalNode)) == closedList.end()) && (!openList.empty())) {
         Node* pparentNode = openList.top();  
         openList.pop();
+        // check if parentnode == every single goal nodes along with time 
+        // pparennode.time <= goal time 
+
+
         visitedList[GetNodeIndex(pstartNode)] = pstartNode;
         closedList[GetNodeIndex(*pparentNode)] = pparentNode;
         for (int dir=0; dir<NUMOFDIRS; dir++){ 
@@ -205,6 +215,8 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
             }
         }
         if (closedList.find(GetNodeIndex(goalNode)) != closedList.end()) {
+            // When checking the goal, I need to check the time
+
             goalNode.SetParent(pparentNode);
 
             Node* p = goalNode.GetParent();
@@ -217,6 +229,9 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
             std::reverse(path.begin(), path.end());
         }    
     }
+
+
+
     // loop through closedlist, openlist and delete all elements    
     for (auto i=closedList.begin(); i != closedList.end();i++) {
         delete i->second;
@@ -229,6 +244,100 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
     return path;
 }
 
+std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int currTime)
+{
+    std::vector<std::pair<int, int>> path;
+    std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
+    std::unordered_map<int, Node*> closedList;
+    std::unordered_map<int, Node*> goalList; // a separate goallist     
+    std::unordered_map<int, Node*> visitedList;
+    
+    double weight = 1.0;    
+    Node* pstartNode = new Node(startNode);
+    pstartNode->SetGValue(0);
+
+    openList.push(pstartNode); 
+
+
+    // mtargetTrajectory;
+    // update goal at here? 
+    // check time -> extract goal from the trajectory
+    // I can also check the elapsed time running AStar and add that to goal time.
+
+    while((!openList.empty())) {
+        Node* pparentNode = openList.top();  
+        openList.pop();
+        // check if parentnode == every single goal nodes along with time 
+        // pparennode.time <= goal time 
+        currTime = pparentNode->GetCurrentTime();
+        int targetTime = currTime;
+
+        Node* pgoalNode = new Node((int)mtargetTrajectory[targetTime], (int)mtargetTrajectory[targetTime+mtargetSteps], targetTime);
+
+        if (GetNodeIndex(pparentNode) == GetNodeIndex(pgoalNode)) {
+            pgoalNode->SetParent(pparentNode);
+
+            Node* p = pgoalNode->GetParent();
+
+            while (p != nullptr) {
+                path.push_back(std::make_pair(p->GetPoseX(), p->GetPoseY()));
+                p = p->GetParent();    
+            }
+            std::reverse(path.begin(), path.end());
+            break;
+        }    
+
+        visitedList[GetNodeIndex(pstartNode)] = pstartNode;
+        closedList[GetNodeIndex(*pparentNode)] = pparentNode;
+        for (int dir=0; dir<NUMOFDIRS; dir++){ 
+            int newX = pparentNode->GetPoseX() + mdX[dir];
+            int newY = pparentNode->GetPoseY() + mdY[dir];
+            int newIndex = GetIndexFromPose(newX, newY);
+        
+            Node* psuccNode = new Node(newX, newY, currTime+1); // need to calculate time, which increases by +1    
+            if (IsCellValid(psuccNode)) {                            
+                psuccNode->SetHeuristics(ComputeEuclideanHeuristics(psuccNode, pgoalNode));                
+                if (visitedList.find(newIndex) != visitedList.end()){ // If visited                     
+                    if (closedList.find(newIndex) != closedList.end()){  //If inside the closde list
+                    Node* pexistingNode = closedList.at(newIndex);
+                        if(pexistingNode->GetFValue() > pparentNode->GetGValue()+mmap[newIndex]+weight*(psuccNode->GetHeuristics())){
+                            psuccNode->SetGValue(pparentNode->GetGValue()+mmap[newIndex]);
+                            psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(), weight));
+                            psuccNode->SetParent(pparentNode);
+                            openList.push(psuccNode);                      
+                        }      
+                    }                     
+                } else { // If NOT visited 
+                    visitedList[newIndex]=psuccNode;
+                    if (psuccNode->GetGValue()> pparentNode->GetGValue()+mmap[newIndex]){                
+                        psuccNode->SetGValue(pparentNode->GetGValue()+mmap[newIndex]);
+                        psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(), weight));                
+                        psuccNode->SetParent(pparentNode);
+                        openList.push(psuccNode);                     
+                    }                     
+                }            
+            } 
+            else {
+                // printf("Invalid Cell.\n");
+                continue;
+            }
+        }
+
+    }
+
+
+
+    // loop through closedlist, openlist and delete all elements    
+    for (auto i=closedList.begin(); i != closedList.end();i++) {
+        delete i->second;
+    }
+
+    while (!openList.empty()){
+        openList.pop(); // deallocates memory
+    }
+
+    return path;
+}
 std::vector<Node*> FindPath::GetOptimalPath(Node* pgoalNode)
 {
     std::vector<Node*> path;
