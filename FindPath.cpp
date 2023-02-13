@@ -76,6 +76,25 @@ std::pair<int, int> FindPath::ExecuteAStar2DDijkstra(
      
 }
 
+std::pair<int, int> FindPath::MultigoalAStar(
+                     int robotposeX, 
+                     int robotposeY,
+                     int targetposeX,
+                     int targetposeY,
+                     int curr_time,
+                     double* action_ptr)
+{
+    Node startNode(robotposeX, robotposeY, curr_time); 
+    if (!IsCellValid(startNode)) {
+        printf("NODE INVALID");
+    }
+
+    std::vector<std::pair<int, int>> path = MultigoalAStar(startNode, curr_time);
+    std::pair<int, int> nextPose = std::make_pair(path[1].first, path[1].second);
+
+    return nextPose;
+}
+
 std::vector<std::pair<int, int>> FindPath::AStarwith2DDijkstra(Node startNode, Node goalNode, int currTime, std::unordered_map<int, double>* pheuristicsTable)
 {
     std::vector<std::pair<int, int>> path;
