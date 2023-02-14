@@ -276,7 +276,8 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
         // pgoalNode->SetHeuristics(0.0);
         // pgoalNode->SetGValue(0.0);
         // pgoalNode->SetFValue(ComputeFValue(pgoalNode->GetGValue(), pgoalNode->GetHeuristics(),0));
-        goalList[GetNodeIndex(pgoalNode)] = pgoalNode;
+        goalList[GetNodeIndex(pgoalNode)] = pgoalNode;    
+
     }
 
     double weight = 1.0;    
@@ -289,20 +290,19 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
     // check time -> extract goal from the trajectory
     // I can also check the elapsed time running AStar and add that to goal time.
     
-    int closed_cnt = 0;
-    int open_cnt = 0;
-
     while((!openList.empty())) {
         Node* pparentNode = openList.top();  
         openList.pop();
+        
+        // printf("parent node x y t: %d %d %d\n", pparentNode->GetPoseX(), pparentNode->GetPoseY(), pparentNode->GetCurrentTime());
         visitedList[GetNodeIndex(pstartNode)] = pstartNode;
         closedList[GetNodeIndex(pparentNode)] = pparentNode;
         // check if parentnode == every single goal nodes along with time 
         // pparentnode.time <= goal time 
         currTime = pparentNode->GetCurrentTime();
-        int targetTime = currTime; // targetTime >= currTime
+        int targetTime = 335; // targetTime >= currTime
         Node* ptargetGoalNode = goalList[GetIndexFromPose((int)mtargetTrajectory[targetTime], (int)mtargetTrajectory[targetTime+mtargetSteps])];
-        
+        // printf("goal   node x y t: %d %d %d\n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
         // printf("popped openlist\n");
         // printf("ptargetgoal created.\n");
         
@@ -319,7 +319,7 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
             
             while(!openList.empty()){
                 delete openList.top();
-                printf("deallocating memory from openlist\n");
+                // printf("deallocating memory from openlist\n");
                 openList.pop();
             }
             break;
@@ -343,7 +343,7 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
                             psuccNode->SetParent(pparentNode);
                             openList.push(psuccNode);   
                             // printf("updated closed list and pushed to openlist.\n\n");                   
-                            closed_cnt++;
+                            
                             
                         }      
                     }                     
@@ -355,7 +355,7 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
                         psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(), weight));                
                         psuccNode->SetParent(pparentNode);
                         openList.push(psuccNode);     
-                        open_cnt++;
+                        
                         
                         // printf("pushed to open list.\n\n");                
                     }                     
@@ -371,20 +371,18 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
 
     }
 
-    printf("exists while loop\n");
+    // printf("exists while loop\n");
     // loop through closedlist, openlist, goallist and delete all elements    
 
     for (auto i=goalList.begin(); i != goalList.end();i++){
         delete i->second;
     }
-    printf("goal list is deleted\n");
+    // printf("goal list is deleted\n");
 
    for (auto i=closedList.begin(); i != closedList.end();i++){
         delete i->second;
     }
-    printf("closed list is deleted\n");
-    printf("closed counter: %d;\n", closed_cnt);
-    printf("open counter: %d;\n", open_cnt);
+    // printf("closed list is deleted\n");
     // for (auto i=visitedList.begin(); i != visitedList.end();i++) {
     //     delete i->second;
     // }
