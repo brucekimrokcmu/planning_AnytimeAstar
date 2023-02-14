@@ -41,7 +41,7 @@ class FindPath {
                      int curr_time,
                      double* action_ptr);
 
-        std::pair<int, int> MultigoalAStar(
+        std::pair<int, int> ExecuteMultigoalAStar(
                      int robotposeX, 
                      int robotposeY,
                      int targetposeX,

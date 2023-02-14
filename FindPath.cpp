@@ -27,10 +27,8 @@ std::pair<int, int> FindPath::ExecuteAStar(
     Node goalNode(targetposeX, targetposeY, curr_time); 
 
     // Compute heuristics
-    if (IsCellValid(startNode)) {
-        startNode.SetGValue(0.0);
-        startNode.SetHeuristics(ComputeEuclideanHeuristics(startNode, goalNode));
-        startNode.SetFValue(ComputeFValue(startNode.GetGValue(), startNode.GetHeuristics(), weight));
+    if (!IsCellValid(startNode)) {
+        printf("Invalid StartNode!\n");
     }
     if (IsCellValid(goalNode)){
         goalNode.SetGValue(mmap[GetNodeIndex(goalNode)]);
@@ -76,7 +74,7 @@ std::pair<int, int> FindPath::ExecuteAStar2DDijkstra(
      
 }
 
-std::pair<int, int> FindPath::MultigoalAStar(
+std::pair<int, int> FindPath::ExecuteMultigoalAStar(
                      int robotposeX, 
                      int robotposeY,
                      int targetposeX,
@@ -90,8 +88,9 @@ std::pair<int, int> FindPath::MultigoalAStar(
     }
 
     std::vector<std::pair<int, int>> path = MultigoalAStar(startNode, curr_time);
+    printf("exits multigoalstar function\n");
     std::pair<int, int> nextPose = std::make_pair(path[1].first, path[1].second);
-
+    printf("retrieves next pose from the path.\n");
     return nextPose;
 }
 
@@ -180,26 +179,21 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
     std::vector<std::pair<int, int>> path;
     std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
     std::unordered_map<int, Node*> closedList;
-    // a separate goallist 
     std::unordered_map<int, Node*> visitedList;
     
     double weight = 1.0;    
     Node* pstartNode = new Node(startNode);
+    startNode.SetGValue(0.0);
+    startNode.SetHeuristics(ComputeEuclideanHeuristics(startNode, goalNode));
+    startNode.SetFValue(ComputeFValue(startNode.GetGValue(), startNode.GetHeuristics(), weight));
     openList.push(pstartNode); 
-
-    // update goal at here? 
-    // check time -> extract goal from the trajectory
-    // I can also check the elapsed time running AStar and add that to goal time.
 
     while((closedList.find(GetNodeIndex(goalNode)) == closedList.end()) && (!openList.empty())) {
         Node* pparentNode = openList.top();  
-        openList.pop();
-        // check if parentnode == every single goal nodes along with time 
-        // pparennode.time <= goal time 
-
-
         visitedList[GetNodeIndex(pstartNode)] = pstartNode;
-        closedList[GetNodeIndex(*pparentNode)] = pparentNode;
+        closedList[GetNodeIndex(*pparentNode)] = pparentNode;        
+        openList.pop();
+
         for (int dir=0; dir<NUMOFDIRS; dir++){ 
             int newX = pparentNode->GetPoseX() + mdX[dir];
             int newY = pparentNode->GetPoseY() + mdY[dir];
@@ -257,6 +251,7 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
     }
 
     while (!openList.empty()){
+        delete openList.top();
         openList.pop(); // deallocates memory
     }
 
@@ -270,33 +265,39 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
     std::unordered_map<int, Node*> closedList;
     std::unordered_map<int, Node*> goalList; // a separate goallist     
     std::unordered_map<int, Node*> visitedList;
-    
+    //create a goallist
+    for (int i=0; i<mtargetSteps;i++){
+        Node* pgoalNode = new Node((int)mtargetTrajectory[i], (int)mtargetTrajectory[i+mtargetSteps], i);
+        goalList[GetNodeIndex(pgoalNode)] = pgoalNode;
+    }
+
     double weight = 1.0;    
     Node* pstartNode = new Node(startNode);
     pstartNode->SetGValue(0);
-
+    pstartNode->SetHeuristics(ComputeEuclideanHeuristics(pstartNode, goalList[GetIndexFromPose((int)mtargetTrajectory[0], (int)mtargetTrajectory[mtargetSteps])]));
+    pstartNode->SetFValue(ComputeFValue(pstartNode->GetGValue(), pstartNode->GetHeuristics(), 1));
     openList.push(pstartNode); 
-
-
-    // mtargetTrajectory;
-    // update goal at here? 
+    printf("initialized pstartNode and pushed into openlist.\n");
     // check time -> extract goal from the trajectory
     // I can also check the elapsed time running AStar and add that to goal time.
-
     while((!openList.empty())) {
         Node* pparentNode = openList.top();  
+        visitedList[GetNodeIndex(pstartNode)] = pstartNode;
+        closedList[GetNodeIndex(*pparentNode)] = pparentNode;
         openList.pop();
         // check if parentnode == every single goal nodes along with time 
         // pparennode.time <= goal time 
         currTime = pparentNode->GetCurrentTime();
         int targetTime = currTime;
-
-        Node* pgoalNode = new Node((int)mtargetTrajectory[targetTime], (int)mtargetTrajectory[targetTime+mtargetSteps], targetTime);
-
-        if (GetNodeIndex(pparentNode) == GetNodeIndex(pgoalNode)) {
-            pgoalNode->SetParent(pparentNode);
-
-            Node* p = pgoalNode->GetParent();
+        printf("popped openlist\n");
+        Node* ptargetGoalNode = goalList[GetIndexFromPose((int)mtargetTrajectory[targetTime], (int)mtargetTrajectory[targetTime+mtargetSteps])];
+        printf("ptargetgoal created.\n");
+        
+        if (GetNodeIndex(pparentNode) == GetNodeIndex(ptargetGoalNode)) {
+            printf("parent meets goal\n");
+            ptargetGoalNode->SetParent(pparentNode);
+            
+            Node* p = ptargetGoalNode->GetParent();
 
             while (p != nullptr) {
                 path.push_back(std::make_pair(p->GetPoseX(), p->GetPoseY()));
@@ -306,16 +307,14 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
             break;
         }    
 
-        visitedList[GetNodeIndex(pstartNode)] = pstartNode;
-        closedList[GetNodeIndex(*pparentNode)] = pparentNode;
+
         for (int dir=0; dir<NUMOFDIRS; dir++){ 
             int newX = pparentNode->GetPoseX() + mdX[dir];
             int newY = pparentNode->GetPoseY() + mdY[dir];
             int newIndex = GetIndexFromPose(newX, newY);
-        
             Node* psuccNode = new Node(newX, newY, currTime+1); // need to calculate time, which increases by +1    
             if (IsCellValid(psuccNode)) {                            
-                psuccNode->SetHeuristics(ComputeEuclideanHeuristics(psuccNode, pgoalNode));                
+                psuccNode->SetHeuristics(ComputeEuclideanHeuristics(psuccNode, ptargetGoalNode));                
                 if (visitedList.find(newIndex) != visitedList.end()){ // If visited                     
                     if (closedList.find(newIndex) != closedList.end()){  //If inside the closde list
                     Node* pexistingNode = closedList.at(newIndex);
@@ -341,20 +340,31 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
                 continue;
             }
         }
-        delete pgoalNode;
+        currTime++;
+        printf("currtime ++\n");
 
     }
+    printf("exists while loop\n");
+    // loop through closedlist, openlist, goallist and delete all elements    
 
-
-
-    // loop through closedlist, openlist and delete all elements    
-    for (auto i=closedList.begin(); i != closedList.end();i++) {
+    for (auto i=goalList.begin(); i != goalList.end();i++){
         delete i->second;
+    
     }
+    printf("goal list is deleted\n");
 
-    while (!openList.empty()){
-        openList.pop(); // deallocates memory
+   for (auto i=closedList.begin(); i != closedList.end();i++){
+        delete i->second;
+    
     }
+    printf("closed list is deleted\n");
+
+    // for (auto i=visitedList.begin(); i != visitedList.end();i++) {
+    //     delete i->second;
+        
+    // }
+    // printf("visited list is deleted\n");
+
 
     return path;
 }
