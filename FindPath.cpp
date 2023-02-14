@@ -81,7 +81,7 @@ std::vector<std::pair<int, int>> FindPath::ExecuteMultigoalAStar(
     if (!IsCellValid(startNode)) {
         printf("NODE INVALID");
     }
-    int targetTime = 240;
+    int targetTime = 400;
     int dT = 200;
     
     printf("get path and return the index one\n");
@@ -283,7 +283,7 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
         goalList[GetNodeIndex(pgoalNode)] = pgoalNode;    
     }
     
-    double weight = 1.0;    
+    double weight = 200.0;    
     Node* pstartNode = new Node(startNode);
     pstartNode->SetGValue(0.0);
     pstartNode->SetHeuristics(ComputeEuclideanHeuristics(pstartNode, goalList[GetIndexFromPose((int)mtargetTrajectory[0], (int)mtargetTrajectory[mtargetSteps])]));
