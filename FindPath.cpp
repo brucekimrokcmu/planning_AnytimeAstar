@@ -177,15 +177,15 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
     
     double weight = 1.0;    
     Node* pstartNode = new Node(startNode);
-
+    pstartNode->SetGValue(0.0);
+    pstartNode->SetHeuristics(ComputeEuclideanHeuristics(startNode, goalNode));
+    pstartNode->SetFValue(ComputeFValue(startNode.GetGValue(), startNode.GetHeuristics(), weight));
     openList.push(pstartNode); 
 
     while((closedList.find(GetNodeIndex(goalNode)) == closedList.end()) && (!openList.empty())) {
         Node* pparentNode = openList.top();  
         openList.pop();
-        pstartNode->SetGValue(0.0);
-        pstartNode->SetHeuristics(ComputeEuclideanHeuristics(startNode, goalNode));
-        pstartNode->SetFValue(ComputeFValue(startNode.GetGValue(), startNode.GetHeuristics(), weight));
+
 
         visitedList[GetNodeIndex(pstartNode)] = pstartNode;
         closedList[GetNodeIndex(*pparentNode)] = pparentNode;     
