@@ -46,8 +46,8 @@ static void planner(
 
     // targetposeX = (int) target_traj[target_steps-1];
     // targetposeY = (int) target_traj[target_steps-1+target_steps];
-    printf("robot: %d %d;\n", robotposeX, robotposeY);
-    printf("target: %d %d;\n", targetposeX, targetposeY);
+    printf("robot  x y t:%d %d %d;\n", robotposeX, robotposeY, curr_time);
+    printf("target x y t:%d %d %d;\n", targetposeX, targetposeY, curr_time);
     // printf("goal: %d %d;\n", goalposeX, goalposeY);
     // printf("curr time: %d;\n", curr_time);
 
