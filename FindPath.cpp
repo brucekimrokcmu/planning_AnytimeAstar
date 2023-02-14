@@ -58,6 +58,9 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
     pstartNode->SetFValue(ComputeFValue(startNode.GetGValue(), startNode.GetHeuristics(), weight));
     openList.push(pstartNode); 
     
+    // int NotVisited = 0;
+    // int Visited = 0;
+    
     while((closedList.find(GetNodeIndex(goalNode)) == closedList.end()) && (!openList.empty())) {
         Node* pparentNode = openList.top();  
         openList.pop();
@@ -80,6 +83,7 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
                             psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(), weight));
                             psuccNode->SetParent(pparentNode);
                             openList.push(psuccNode);                      
+                            // Visited++;
                         }      
                     }                     
                 } else { // If NOT visited 
@@ -89,6 +93,7 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
                         psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(), weight));                
                         psuccNode->SetParent(pparentNode);
                         openList.push(psuccNode);                     
+                        // NotVisited++;
                     }                     
                 }            
             } 
@@ -119,7 +124,9 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
         delete openList.top();
         openList.pop(); // deallocates memory
     }
-
+    // printf("Vistied n: %d\n", Visited);
+    // printf("Not visited n: %d;\n", NotVisited);
+    
     return path;
 }
 

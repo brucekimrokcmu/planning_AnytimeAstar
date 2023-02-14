@@ -48,7 +48,7 @@ static void planner(
     // targetposeY = (int) target_traj[target_steps-1+target_steps];
     printf("robot: %d %d;\n", robotposeX, robotposeY);
     printf("target: %d %d;\n", targetposeX, targetposeY);
-    printf("goal: %d %d;\n", goalposeX, goalposeY);
+    // printf("goal: %d %d;\n", goalposeX, goalposeY);
     // printf("curr time: %d;\n", curr_time);
 
     std::unique_ptr<FindPath> pathPlanner(new FindPath(map, collision_thresh, x_size, y_size, target_steps, target_traj));
