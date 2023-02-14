@@ -62,7 +62,7 @@ std::pair<int, int> FindPath::ExecuteAStar2DDijkstra(
     std::unordered_map<int, double>* pheuristicsTable = &heuristicsTable;
     std::vector<std::pair<int, int>> path = AStarwith2DDijkstra(startNode, goalNode, curr_time, pheuristicsTable);
     std::pair<int, int> nextPose = std::make_pair(path[1].first, path[1].second);
-
+    printf("next pose x y: %d %d\n", nextPose.first, nextPose.second);
 
     return nextPose;
      
@@ -85,6 +85,7 @@ std::pair<int, int> FindPath::ExecuteMultigoalAStar(
     // printf("exits multigoalstar function\n");
     std::pair<int, int> nextPose = std::make_pair(path[1].first, path[1].second);
     // printf("retrieves next pose from the path.\n");
+    printf("next pose x y: %d %d\n", nextPose.first, nextPose.second);
     return nextPose;
 }
 
@@ -269,8 +270,9 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
     std::unordered_map<int, Node*> visitedList;
 
     if (currTime >= targetTime) {
-        path.push_back(std::make_pair(0,0));
-        path.push_back(std::make_pair(0,0));
+        printf("now staying at the current position");
+        path.push_back(std::make_pair(startNode.GetPoseX(),startNode.GetPoseY()));
+        path.push_back(std::make_pair(startNode.GetPoseX(),startNode.GetPoseY()));
         return path;
     }
     
@@ -299,87 +301,95 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
     // I can also check the elapsed time running AStar and add that to goal time.
     
     while((!openList.empty())) {
-        Node* pparentNode = openList.top();  
-        openList.pop();
-        
-        // printf("parent node x y t: %d %d %d\n", pparentNode->GetPoseX(), pparentNode->GetPoseY(), pparentNode->GetCurrentTime());
-        visitedList[GetNodeIndex(pstartNode)] = pstartNode;
-        closedList[GetNodeIndex(pparentNode)] = pparentNode;
-        // check if parentnode == every single goal nodes along with time 
-        // pparentnode.time <= goal time 
-        currTime = pparentNode->GetCurrentTime();
-        // targetTime >= currTime
-        Node* ptargetGoalNode = goalList[GetIndexFromPose((int)mtargetTrajectory[targetTime], (int)mtargetTrajectory[targetTime+mtargetSteps])];
-        // printf("goal   node x y t: %d %d %d\n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
-        // printf("popped openlist\n");
-        // printf("ptargetgoal created.\n");
-        
-        if (GetNodeIndex(pparentNode) == GetNodeIndex(ptargetGoalNode)) {
-            printf("parent meets goal\n");
-            ptargetGoalNode->SetParent(pparentNode);
+        if(IsCellValid(openList.top())){
+            Node* pparentNode = openList.top();  
+            openList.pop();
             
-            Node* p = ptargetGoalNode->GetParent();
-            while (p != nullptr) {
-                path.push_back(std::make_pair(p->GetPoseX(), p->GetPoseY()));
-                p = p->GetParent();    
-            }
-            std::reverse(path.begin(), path.end());
+            printf("parent node x y t: %d %d %d\n", pparentNode->GetPoseX(), pparentNode->GetPoseY(), pparentNode->GetCurrentTime());
+            visitedList[GetNodeIndex(pstartNode)] = pstartNode;
+            closedList[GetNodeIndex(pparentNode)] = pparentNode;
+            // check if parentnode == every single goal nodes along with time 
+            // pparentnode.time <= goal time 
+            currTime = pparentNode->GetCurrentTime();
+            // targetTime >= currTime
+            Node* ptargetGoalNode = goalList[GetIndexFromPose((int)mtargetTrajectory[targetTime], (int)mtargetTrajectory[targetTime+mtargetSteps])];
+            printf("goal   node x y t: %d %d %d\n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
+            // printf("popped openlist\n");
+            // printf("ptargetgoal created.\n");
             
-            while(!openList.empty()){
-                delete openList.top();
-                // printf("deallocating memory from openlist\n");
-                openList.pop();
-            }
+            if (GetNodeIndex(pparentNode) == GetNodeIndex(ptargetGoalNode)) {
+                // printf("parent meets goal\n");
+                ptargetGoalNode->SetParent(pparentNode);
+                
+                Node* p = ptargetGoalNode->GetParent();
+                while (p != nullptr) {
+                    path.push_back(std::make_pair(p->GetPoseX(), p->GetPoseY()));
+                    p = p->GetParent();    
+                }
+                std::reverse(path.begin(), path.end());
+                
+                for (int i=0; i<5; i++){
+                    printf("next pose x y: %d %d \n", path[i].first, path[i].second);
+                }
 
-            break;
-        }    
+                while(!openList.empty()){
+                    delete openList.top();
+                    // printf("deallocating memory from openlist\n");
+                    openList.pop();
+                }
+                break;
+            }    
 
-        for (int dir=0; dir<NUMOFDIRS; dir++){ 
-            int newX = pparentNode->GetPoseX() + mdX[dir];
-            int newY = pparentNode->GetPoseY() + mdY[dir];
-            int newIndex = GetIndexFromPose(newX, newY);
-           
-            Node* psuccNode = new Node(newX, newY, currTime+1); // need to calculate time, which increases by +1    
-            if (IsCellValid(psuccNode)) {                            
-                psuccNode->SetHeuristics(ComputeEuclideanHeuristics(psuccNode, ptargetGoalNode));                
-                if (visitedList.find(newIndex) != visitedList.end()){ // If visited                     
-                    // printf("Visited.\n");
-                    if (closedList.find(newIndex) != closedList.end()){  //If inside the closde list
-                    Node* pexistingNode = closedList.at(newIndex);
-                        if(pexistingNode->GetFValue() > pparentNode->GetGValue()+mmap[newIndex]+weight*(psuccNode->GetHeuristics())){
-                            psuccNode->SetGValue(pparentNode->GetGValue()+mmap[newIndex]);
-                            psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(), weight));
-                            psuccNode->SetParent(pparentNode);
-                            openList.push(psuccNode);   
-                            // printf("updated closed list and pushed to openlist.\n\n");                   
-                            
-                            
-                        }      
-                    }                     
-                } else { // If NOT visited 
-                    visitedList[newIndex]=psuccNode;
-                    // printf("Not visited\n");
-                    if (psuccNode->GetGValue()> pparentNode->GetGValue()+mmap[newIndex]){                
-                        psuccNode->SetGValue(pparentNode->GetGValue()+mmap[newIndex]);
-                        psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(), weight));                
-                        psuccNode->SetParent(pparentNode);
-                        openList.push(psuccNode);     
-                        
-                        
-                        // printf("pushed to open list.\n\n");                
-                    }                     
-                }            
-            } 
-            else {
-                // printf("Invalid Cell.\n");
-                continue;
+            for (int dir=0; dir<NUMOFDIRS; dir++){ 
+                int newX = pparentNode->GetPoseX() + mdX[dir];
+                int newY = pparentNode->GetPoseY() + mdY[dir];
+                int newIndex = GetIndexFromPose(newX, newY);
+
+                if (newX >= 1 && newX <= mxSize && newY >= 1 && newY <= mySize) {    
+                    if (((int)mmap[newIndex] >= 0) && ((int)mmap[newIndex] < mcollisionThresh)) {
+                        Node* psuccNode = new Node(newX, newY, currTime+1); // need to calculate time, which increases by +1    
+                        if (IsCellValid(psuccNode)) {                            
+                            psuccNode->SetHeuristics(ComputeEuclideanHeuristics(psuccNode, ptargetGoalNode));                
+                            if (visitedList.find(newIndex) != visitedList.end()){ // If visited                     
+                                // printf("Visited.\n");
+                                if (closedList.find(newIndex) != closedList.end()){  //If inside the closde list
+                                Node* pexistingNode = closedList.at(newIndex);
+                                    if(pexistingNode->GetFValue() > pparentNode->GetGValue()+mmap[newIndex]+weight*(psuccNode->GetHeuristics())){
+                                        psuccNode->SetGValue(pparentNode->GetGValue()+mmap[newIndex]);
+                                        psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(), weight));
+                                        psuccNode->SetParent(pparentNode);
+                                        openList.push(psuccNode);   
+                                        // printf("updated closed list and pushed to openlist.\n\n");                   
+                                        
+                                        
+                                    }      
+                                }                     
+                            } else { // If NOT visited 
+                                visitedList[newIndex]=psuccNode;
+                                // printf("Not visited\n");
+                                if (psuccNode->GetGValue()> pparentNode->GetGValue()+mmap[newIndex]){                
+                                    psuccNode->SetGValue(pparentNode->GetGValue()+mmap[newIndex]);
+                                    psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(), weight));                
+                                    psuccNode->SetParent(pparentNode);
+                                    openList.push(psuccNode);     
+                                    
+                                    
+                                    // printf("pushed to open list.\n\n");                
+                                }                     
+                            }            
+                        } 
+                        else {
+                            printf("Invalid succNode.\n");
+                            continue;
+                        }
+                    }
+                }
             }
+            currTime++;
+            // printf("currtime ++\n");
+
+
         }
-        currTime++;
-        // printf("currtime ++\n");
-
-
-
     }
 
     // printf("exists while loop\n");
