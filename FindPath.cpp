@@ -80,12 +80,12 @@ std::pair<int, int> FindPath::ExecuteMultigoalAStar(
     if (!IsCellValid(startNode)) {
         printf("NODE INVALID");
     }
-    int targetTime = 350;
+    int targetTime = 240;
     std::vector<std::pair<int, int>> path = MultigoalAStar(startNode, curr_time, targetTime);
     // printf("exits multigoalstar function\n");
     std::pair<int, int> nextPose = std::make_pair(path[1].first, path[1].second);
     // printf("retrieves next pose from the path.\n");
-    printf("next pose x y: %d %d\n", nextPose.first, nextPose.second);
+    // printf("next pose x y: %d %d\n", nextPose.first, nextPose.second);
     return nextPose;
 }
 
@@ -305,7 +305,7 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
             Node* pparentNode = openList.top();  
             openList.pop();
             
-            printf("parent node x y t: %d %d %d\n", pparentNode->GetPoseX(), pparentNode->GetPoseY(), pparentNode->GetCurrentTime());
+            // printf("parent node x y t: %d %d %d\n", pparentNode->GetPoseX(), pparentNode->GetPoseY(), pparentNode->GetCurrentTime());
             visitedList[GetNodeIndex(pstartNode)] = pstartNode;
             closedList[GetNodeIndex(pparentNode)] = pparentNode;
             // check if parentnode == every single goal nodes along with time 
@@ -313,7 +313,7 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
             currTime = pparentNode->GetCurrentTime();
             // targetTime >= currTime
             Node* ptargetGoalNode = goalList[GetIndexFromPose((int)mtargetTrajectory[targetTime], (int)mtargetTrajectory[targetTime+mtargetSteps])];
-            printf("goal   node x y t: %d %d %d\n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
+            // printf("goal   node x y t: %d %d %d\n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
             // printf("popped openlist\n");
             // printf("ptargetgoal created.\n");
             
@@ -328,9 +328,9 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
                 }
                 std::reverse(path.begin(), path.end());
                 
-                for (int i=0; i<5; i++){
-                    printf("next pose x y: %d %d \n", path[i].first, path[i].second);
-                }
+                // for (int i=0; i<3; i++){
+                //     printf("next pose x y: %d %d \n", path[i].first, path[i].second);
+                // }
 
                 while(!openList.empty()){
                     delete openList.top();
@@ -344,10 +344,11 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
                 int newX = pparentNode->GetPoseX() + mdX[dir];
                 int newY = pparentNode->GetPoseY() + mdY[dir];
                 int newIndex = GetIndexFromPose(newX, newY);
-
+                // printf("num of succ: %d\n", dir);
                 if (newX >= 1 && newX <= mxSize && newY >= 1 && newY <= mySize) {    
                     if (((int)mmap[newIndex] >= 0) && ((int)mmap[newIndex] < mcollisionThresh)) {
-                        Node* psuccNode = new Node(newX, newY, currTime+1); // need to calculate time, which increases by +1    
+                        Node* psuccNode = new Node(newX, newY, currTime+1);   
+                        // printf("psucc node x y t: %d %d %d;\n", psuccNode->GetPoseX(), psuccNode->GetPoseY(), psuccNode->GetCurrentTime());
                         if (IsCellValid(psuccNode)) {                            
                             psuccNode->SetHeuristics(ComputeEuclideanHeuristics(psuccNode, ptargetGoalNode));                
                             if (visitedList.find(newIndex) != visitedList.end()){ // If visited                     
@@ -382,7 +383,11 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
                             printf("Invalid succNode.\n");
                             continue;
                         }
+                    } else {
+                        continue;
                     }
+                } else {
+                    continue;
                 }
             }
             currTime++;
