@@ -22,8 +22,6 @@ std::pair<int, int> FindPath::ExecuteAStar(
 {
     double weight = 1.0;
     Node startNode(robotposeX, robotposeY, curr_time);  
-    // this doesn't take account of goalpose changes w.r.t. time changes  
-    // Let's first assume that goal pose is stationary and try to debug
     Node goalNode(targetposeX, targetposeY, curr_time); 
 
     // Compute heuristics
@@ -36,12 +34,8 @@ std::pair<int, int> FindPath::ExecuteAStar(
         goalNode.SetFValue(ComputeFValue(goalNode.GetGValue(),goalNode.GetHeuristics(), weight));
     }
 
-
     std::vector<std::pair<int, int>> path = AStar(startNode, goalNode, curr_time);
-    // For AstarwithDijkstra, I will pass DikstraHeuristics as an argument
-    // AStarwithDijkstra()
     std::pair<int, int> nextPose = std::make_pair(path[1].first, path[1].second);
-
 
     return nextPose;
 }
@@ -183,16 +177,18 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
     
     double weight = 1.0;    
     Node* pstartNode = new Node(startNode);
-    startNode.SetGValue(0.0);
-    startNode.SetHeuristics(ComputeEuclideanHeuristics(startNode, goalNode));
-    startNode.SetFValue(ComputeFValue(startNode.GetGValue(), startNode.GetHeuristics(), weight));
+
     openList.push(pstartNode); 
 
     while((closedList.find(GetNodeIndex(goalNode)) == closedList.end()) && (!openList.empty())) {
         Node* pparentNode = openList.top();  
-        visitedList[GetNodeIndex(pstartNode)] = pstartNode;
-        closedList[GetNodeIndex(*pparentNode)] = pparentNode;        
         openList.pop();
+        pstartNode->SetGValue(0.0);
+        pstartNode->SetHeuristics(ComputeEuclideanHeuristics(startNode, goalNode));
+        pstartNode->SetFValue(ComputeFValue(startNode.GetGValue(), startNode.GetHeuristics(), weight));
+
+        visitedList[GetNodeIndex(pstartNode)] = pstartNode;
+        closedList[GetNodeIndex(*pparentNode)] = pparentNode;     
 
         for (int dir=0; dir<NUMOFDIRS; dir++){ 
             int newX = pparentNode->GetPoseX() + mdX[dir];
@@ -243,18 +239,23 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
         }    
     }
 
-
-
     // loop through closedlist, openlist and delete all elements    
     for (auto i=closedList.begin(); i != closedList.end();i++) {
         delete i->second;
     }
 
-    while (!openList.empty()){
+    if(openList.empty()){
+        printf("openlist is already empty.\n");
+    } else {
+        while (!openList.empty()){
+        printf("deallocating memory from openlist\n");
         delete openList.top();
         openList.pop(); // deallocates memory
     }
 
+    }
+
+    
     return path;
 }
 
@@ -266,47 +267,54 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
     std::unordered_map<int, Node*> goalList; // a separate goallist     
     std::unordered_map<int, Node*> visitedList;
     //create a goallist
-    for (int i=0; i<mtargetSteps;i++){
-        Node* pgoalNode = new Node((int)mtargetTrajectory[i], (int)mtargetTrajectory[i+mtargetSteps], i);
+    for (int t=0; t<mtargetSteps;t++){
+        Node* pgoalNode = new Node((int)mtargetTrajectory[t], (int)mtargetTrajectory[t+mtargetSteps], t);
+        pgoalNode->SetGValue(1.0); //Equal MultigoalAstar
         goalList[GetNodeIndex(pgoalNode)] = pgoalNode;
     }
 
     double weight = 1.0;    
     Node* pstartNode = new Node(startNode);
-    pstartNode->SetGValue(0);
+    pstartNode->SetGValue(0.0);
     pstartNode->SetHeuristics(ComputeEuclideanHeuristics(pstartNode, goalList[GetIndexFromPose((int)mtargetTrajectory[0], (int)mtargetTrajectory[mtargetSteps])]));
     pstartNode->SetFValue(ComputeFValue(pstartNode->GetGValue(), pstartNode->GetHeuristics(), 1));
     openList.push(pstartNode); 
     printf("initialized pstartNode and pushed into openlist.\n");
     // check time -> extract goal from the trajectory
     // I can also check the elapsed time running AStar and add that to goal time.
+    
     while((!openList.empty())) {
         Node* pparentNode = openList.top();  
-        visitedList[GetNodeIndex(pstartNode)] = pstartNode;
-        closedList[GetNodeIndex(*pparentNode)] = pparentNode;
         openList.pop();
+        visitedList[GetNodeIndex(pstartNode)] = pstartNode;
+        closedList[GetNodeIndex(pparentNode)] = pparentNode;
         // check if parentnode == every single goal nodes along with time 
-        // pparennode.time <= goal time 
+        // pparentnode.time <= goal time 
         currTime = pparentNode->GetCurrentTime();
         int targetTime = currTime;
-        printf("popped openlist\n");
         Node* ptargetGoalNode = goalList[GetIndexFromPose((int)mtargetTrajectory[targetTime], (int)mtargetTrajectory[targetTime+mtargetSteps])];
-        printf("ptargetgoal created.\n");
+        
+        // printf("popped openlist\n");
+        // printf("ptargetgoal created.\n");
         
         if (GetNodeIndex(pparentNode) == GetNodeIndex(ptargetGoalNode)) {
             printf("parent meets goal\n");
             ptargetGoalNode->SetParent(pparentNode);
             
             Node* p = ptargetGoalNode->GetParent();
-
             while (p != nullptr) {
                 path.push_back(std::make_pair(p->GetPoseX(), p->GetPoseY()));
                 p = p->GetParent();    
             }
             std::reverse(path.begin(), path.end());
+            
+            while(!openList.empty()){
+                delete openList.top();
+                printf("deallocating memory from openlist\n");
+                openList.pop();
+            }
             break;
         }    
-
 
         for (int dir=0; dir<NUMOFDIRS; dir++){ 
             int newX = pparentNode->GetPoseX() + mdX[dir];
@@ -341,7 +349,7 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
             }
         }
         currTime++;
-        printf("currtime ++\n");
+        // printf("currtime ++\n");
 
     }
     printf("exists while loop\n");
@@ -349,19 +357,16 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
 
     for (auto i=goalList.begin(); i != goalList.end();i++){
         delete i->second;
-    
     }
     printf("goal list is deleted\n");
 
    for (auto i=closedList.begin(); i != closedList.end();i++){
         delete i->second;
-    
     }
     printf("closed list is deleted\n");
 
     // for (auto i=visitedList.begin(); i != visitedList.end();i++) {
     //     delete i->second;
-        
     // }
     // printf("visited list is deleted\n");
 
