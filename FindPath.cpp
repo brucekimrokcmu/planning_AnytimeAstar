@@ -269,7 +269,13 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
     //create a goallist
     for (int t=0; t<mtargetSteps;t++){
         Node* pgoalNode = new Node((int)mtargetTrajectory[t], (int)mtargetTrajectory[t+mtargetSteps], t);
-        pgoalNode->SetGValue(1.0); //Equal MultigoalAstar
+        // //MultigoalAstar - But this version doesn't have an imaginary goal
+        // //Thus, the below G, H, F value definition are not required.
+        // //Because my search will end once parent node index is equal to goal node index
+
+        // pgoalNode->SetHeuristics(0.0);
+        // pgoalNode->SetGValue(0.0);
+        // pgoalNode->SetFValue(ComputeFValue(pgoalNode->GetGValue(), pgoalNode->GetHeuristics(),0));
         goalList[GetNodeIndex(pgoalNode)] = pgoalNode;
     }
 
@@ -283,6 +289,9 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
     // check time -> extract goal from the trajectory
     // I can also check the elapsed time running AStar and add that to goal time.
     
+    int closed_cnt = 0;
+    int open_cnt = 0;
+
     while((!openList.empty())) {
         Node* pparentNode = openList.top();  
         openList.pop();
@@ -291,7 +300,7 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
         // check if parentnode == every single goal nodes along with time 
         // pparentnode.time <= goal time 
         currTime = pparentNode->GetCurrentTime();
-        int targetTime = currTime;
+        int targetTime = currTime; // targetTime >= currTime
         Node* ptargetGoalNode = goalList[GetIndexFromPose((int)mtargetTrajectory[targetTime], (int)mtargetTrajectory[targetTime+mtargetSteps])];
         
         // printf("popped openlist\n");
@@ -320,26 +329,35 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
             int newX = pparentNode->GetPoseX() + mdX[dir];
             int newY = pparentNode->GetPoseY() + mdY[dir];
             int newIndex = GetIndexFromPose(newX, newY);
+           
             Node* psuccNode = new Node(newX, newY, currTime+1); // need to calculate time, which increases by +1    
             if (IsCellValid(psuccNode)) {                            
                 psuccNode->SetHeuristics(ComputeEuclideanHeuristics(psuccNode, ptargetGoalNode));                
                 if (visitedList.find(newIndex) != visitedList.end()){ // If visited                     
+                    // printf("Visited.\n");
                     if (closedList.find(newIndex) != closedList.end()){  //If inside the closde list
                     Node* pexistingNode = closedList.at(newIndex);
                         if(pexistingNode->GetFValue() > pparentNode->GetGValue()+mmap[newIndex]+weight*(psuccNode->GetHeuristics())){
                             psuccNode->SetGValue(pparentNode->GetGValue()+mmap[newIndex]);
                             psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(), weight));
                             psuccNode->SetParent(pparentNode);
-                            openList.push(psuccNode);                      
+                            openList.push(psuccNode);   
+                            // printf("updated closed list and pushed to openlist.\n\n");                   
+                            closed_cnt++;
+                            
                         }      
                     }                     
                 } else { // If NOT visited 
                     visitedList[newIndex]=psuccNode;
+                    // printf("Not visited\n");
                     if (psuccNode->GetGValue()> pparentNode->GetGValue()+mmap[newIndex]){                
                         psuccNode->SetGValue(pparentNode->GetGValue()+mmap[newIndex]);
                         psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(), weight));                
                         psuccNode->SetParent(pparentNode);
-                        openList.push(psuccNode);                     
+                        openList.push(psuccNode);     
+                        open_cnt++;
+                        
+                        // printf("pushed to open list.\n\n");                
                     }                     
                 }            
             } 
@@ -352,6 +370,7 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
         // printf("currtime ++\n");
 
     }
+
     printf("exists while loop\n");
     // loop through closedlist, openlist, goallist and delete all elements    
 
@@ -364,7 +383,8 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
         delete i->second;
     }
     printf("closed list is deleted\n");
-
+    printf("closed counter: %d;\n", closed_cnt);
+    printf("open counter: %d;\n", open_cnt);
     // for (auto i=visitedList.begin(); i != visitedList.end();i++) {
     //     delete i->second;
     // }
