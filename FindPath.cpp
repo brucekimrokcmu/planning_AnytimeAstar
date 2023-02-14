@@ -363,8 +363,19 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
                                         // printf("updated closed list and pushed to openlist.\n\n");                   
                                         
                                         
-                                    }      
-                                }                     
+                                    } 
+                                     
+                                } else {
+                                    if (psuccNode->GetGValue()> pparentNode->GetGValue()+mmap[newIndex]){                
+                                        psuccNode->SetGValue(pparentNode->GetGValue()+mmap[newIndex]);
+                                        psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(), weight));                
+                                        psuccNode->SetParent(pparentNode);
+                                        openList.push(psuccNode);     
+                                    
+                                    
+                                    // printf("pushed to open list.\n\n");                
+                                    }
+                                }                    
                             } else { // If NOT visited 
                                 visitedList[newIndex]=psuccNode;
                                 // printf("Not visited\n");
@@ -390,10 +401,7 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
                     continue;
                 }
             }
-            currTime++;
-            // printf("currtime ++\n");
-
-
+            
         }
     }
 
