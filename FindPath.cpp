@@ -269,12 +269,7 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
     std::unordered_map<int, Node*> goalList; // a separate goallist     
     std::unordered_map<int, Node*> visitedList;
 
-    if (currTime >= targetTime) {
-        printf("now staying at the current position");
-        path.push_back(std::make_pair(startNode.GetPoseX(),startNode.GetPoseY()));
-        path.push_back(std::make_pair(startNode.GetPoseX(),startNode.GetPoseY()));
-        return path;
-    }
+
     
     //create a goallist
     for (int t=0; t<mtargetSteps;t++){
