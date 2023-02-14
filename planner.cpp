@@ -41,8 +41,8 @@ static void planner(
         )
 {    
     
-    int goalposeX = (int) target_traj[1+curr_time];
-    int goalposeY = (int) target_traj[1+target_steps+curr_time];
+    int goalposeX = (int) target_traj[target_steps-1];
+    int goalposeY = (int) target_traj[target_steps-1+target_steps];
 
     // targetposeX = (int) target_traj[target_steps-1];
     // targetposeY = (int) target_traj[target_steps-1+target_steps];
