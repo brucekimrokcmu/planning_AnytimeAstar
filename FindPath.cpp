@@ -61,6 +61,7 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
     while((closedList.find(GetNodeIndex(goalNode)) == closedList.end()) && (!openList.empty())) {
         Node* pparentNode = openList.top();  
         openList.pop();
+
         visitedList[GetNodeIndex(pstartNode)] = pstartNode;
         closedList[GetNodeIndex(*pparentNode)] = pparentNode;
         for (int dir=0; dir<NUMOFDIRS; dir++){ 
