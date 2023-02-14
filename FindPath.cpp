@@ -28,9 +28,6 @@ std::pair<int, int> FindPath::ExecuteAStar(
 
     // Compute heuristics
     if (IsCellValid(startNode)) {
-        startNode.SetGValue(0.0);
-        startNode.SetHeuristics(ComputeEuclideanHeuristics(startNode, goalNode));
-        startNode.SetFValue(ComputeFValue(startNode.GetGValue(), startNode.GetHeuristics(), weight));
     }
     if (IsCellValid(goalNode)){
         goalNode.SetGValue(mmap[GetNodeIndex(goalNode)]);
@@ -48,114 +45,6 @@ std::pair<int, int> FindPath::ExecuteAStar(
     return nextPose;
 }
 
-
-std::pair<int, int> FindPath::ExecuteAStar2DDijkstra(
-                     int robotposeX, 
-                     int robotposeY,
-                     int targetposeX,
-                     int targetposeY,
-                     int curr_time,
-                     double* action_ptr)
-
-{
-
-    Node startNode(robotposeX, robotposeY, curr_time);  
-    Node goalNode(targetposeX, targetposeY, curr_time); 
-
-    if (!IsCellValid(startNode) || !IsCellValid(goalNode)) {
-        printf("NODE INVALID");
-    }
-
-    std::unordered_map<int, double> heuristicsTable = Get2DDijkstraHeuristicsTable(startNode, goalNode, curr_time);
-    std::unordered_map<int, double>* pheuristicsTable = &heuristicsTable;
-    std::vector<std::pair<int, int>> path = AStarwith2DDijkstra(startNode, goalNode, curr_time, pheuristicsTable);
-    std::pair<int, int> nextPose = std::make_pair(path[1].first, path[1].second);
-
-
-    return nextPose;
-     
-}
-
-std::vector<std::pair<int, int>> FindPath::AStarwith2DDijkstra(Node startNode, Node goalNode, int currTime, std::unordered_map<int, double>* pheuristicsTable)
-{
-    std::vector<std::pair<int, int>> path;
-    std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
-    std::unordered_map<int, Node*> closedList;
-    std::unordered_map<int, Node*> visitedList;
-
-    double weight = 1.0;    
-    Node* pstartNode = new Node(startNode);
-    pstartNode->SetGValue(0);
-    // printf("set pstartnode gval as 0\n");
-    pstartNode->SetHeuristics((*pheuristicsTable)[GetNodeIndex(pstartNode)]);
-    // printf("set pstartnode heuristics according to heuristics table\n");
-    pstartNode->SetFValue(ComputeFValue(pstartNode->GetGValue(), pstartNode->GetHeuristics(), weight));
-    // printf("initializd startnode\n");
-    openList.push(pstartNode); 
-    
-    while((closedList.find(GetNodeIndex(goalNode)) == closedList.end()) && (!openList.empty())) {
-        Node* pparentNode = openList.top();  
-        openList.pop();
-
-        visitedList[GetNodeIndex(pstartNode)] = pstartNode;
-        closedList[GetNodeIndex(*pparentNode)] = pparentNode;
-        for (int dir=0; dir<NUMOFDIRS; dir++){ 
-            int newX = pparentNode->GetPoseX() + mdX[dir];
-            int newY = pparentNode->GetPoseY() + mdY[dir];
-            int newIndex = GetIndexFromPose(newX, newY);
-            Node* psuccNode = new Node(newX, newY, currTime+1);
-            if (IsCellValid(psuccNode)) {
-                psuccNode->SetHeuristics((*pheuristicsTable)[GetNodeIndex(pstartNode)]);
-                if (visitedList.find(newIndex) != visitedList.end()){ // If visited 
-                    if (closedList.find(newIndex) != closedList.end()){  //If inside the closde list
-                    Node* pexistingNode = closedList.at(newIndex);
-                        if(pexistingNode->GetFValue() > pparentNode->GetGValue()+mmap[newIndex]+weight*(psuccNode->GetHeuristics())){
-                            psuccNode->SetGValue(pparentNode->GetGValue()+mmap[newIndex]);
-                            psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(), weight));
-                            psuccNode->SetParent(pparentNode);
-                            openList.push(psuccNode);
-                        }      
-                    } 
-                } else { // If NOT visited 
-                    visitedList[newIndex]=psuccNode;
-                    if (psuccNode->GetGValue()> pparentNode->GetGValue()+mmap[newIndex]){
-                        psuccNode->SetGValue(pparentNode->GetGValue()+mmap[newIndex]);
-                        psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(), weight));                
-                        psuccNode->SetParent(pparentNode);
-                        openList.push(psuccNode);
-                    } 
-                }
-            } 
-            else {
-                // printf("Invalid Cell.\n");
-                continue;
-            }
-        }
-
-        if (closedList.find(GetNodeIndex(goalNode)) != closedList.end()) {
-            goalNode.SetParent(pparentNode);
-
-            Node* p = goalNode.GetParent();
-            while (p != nullptr) {
-                path.push_back(std::make_pair(p->GetPoseX(), p->GetPoseY()));
-                p = p->GetParent();
-                
-            }
-            std::reverse(path.begin(), path.end());
-        }    
-    }
-    // loop through closedlist, openlist and delete all elements    
-    for (auto i=closedList.begin(); i != closedList.end();i++) {
-        delete i->second;
-    }
-    
-    while (!openList.empty()){
-        openList.pop(); // deallocates memory
-    }
-
-    return path;
-}
-
 std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, int currTime)
 {
     std::vector<std::pair<int, int>> path;
@@ -164,6 +53,9 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
     std::unordered_map<int, Node*> visitedList;
     double weight = 1.0;    
     Node* pstartNode = new Node(startNode);
+    pstartNode->SetGValue(0.0);
+    pstartNode->SetHeuristics(ComputeEuclideanHeuristics(startNode, goalNode));
+    pstartNode->SetFValue(ComputeFValue(startNode.GetGValue(), startNode.GetHeuristics(), weight));
     openList.push(pstartNode); 
     
     while((closedList.find(GetNodeIndex(goalNode)) == closedList.end()) && (!openList.empty())) {
@@ -223,6 +115,7 @@ std::vector<std::pair<int, int>> FindPath::AStar(Node startNode, Node goalNode, 
     }
 
     while (!openList.empty()){
+        delete openList.top();
         openList.pop(); // deallocates memory
     }
 

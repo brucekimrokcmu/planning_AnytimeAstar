@@ -71,8 +71,6 @@ class FindPath {
 
         // Algorithms
         std::vector<std::pair<int, int>> AStar(Node startNode, Node goalNode, int currTime);
-        std::vector<std::pair<int, int>> AStarwith2DDijkstra(Node startNode, Node goalNode, int currTime, std::unordered_map<int, double>* pheuristicsTable);
-        std::vector<std::pair<int, int>> AStarwithMultiBackwardDijkstra(Node startNode, Node goalNode, int currTime, std::vector<int> heuristics);        
         std::vector<Node*> GetOptimalPath(Node* pgoalNode);
 
         int GetNodeIndex(Node node); //CHECKED
