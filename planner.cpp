@@ -22,8 +22,9 @@
 //access to the map is shifted to account for 0-based indexing in the map, whereas
 //1-based indexing in matlab (so, robotpose and goalpose are 1-indexed)
 #define GETMAPINDEX(X, Y, XSIZE, YSIZE) ((Y-1)*XSIZE + (X-1))
-
-
+static std::vector<std::pair<int, int>> g_path;
+static bool init = false;
+static int iter=2;
 
 static void planner(
         double*	map,
@@ -53,16 +54,36 @@ static void planner(
 
     std::unique_ptr<FindPath> pathPlanner(new FindPath(map, collision_thresh, x_size, y_size, target_steps, target_traj));
 
+    if(!init) {
+        std::vector<std::pair<int, int>> path = pathPlanner->ExecuteMultigoalAStar(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);        
+        g_path = path;    
+        robotposeX = g_path[1].first;
+        robotposeY = g_path[1].second;
+        // for (int i=0; i<g_path.size(); i++){
+        //     printf("path[i] x y :%d %d %d\n", i, g_path[i].first, g_path[i].second);
+        // }
+        init = true;
+    } else if (iter<g_path.size()){
+        printf("init is now false\n");
+        
+        robotposeX = g_path[iter].first;
+        robotposeY = g_path[iter].second;
+        printf("next robot pose x y: %d %d\n", robotposeX, robotposeY);
+        iter++;
+        
+    }
+    
+    
     // std::pair<int, int> nextPose = pathPlanner->ExecuteAStar(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
     // std::pair<int, int> nextPose = pathPlanner->ExecuteAStar2DDijkstra(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
-    std::pair<int, int> nextPose = pathPlanner->ExecuteMultigoalAStar(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
+
     // FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, target_traj);
     // std::pair<int, int> nextPose = pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
     printf("returns the next pose\n");
     
 
-    robotposeX = nextPose.first;
-    robotposeY = nextPose.second;
+    // robotposeX = nextPose.first;
+    // robotposeY = nextPose.second;
     
     action_ptr[0] = robotposeX;
     action_ptr[1] = robotposeY;

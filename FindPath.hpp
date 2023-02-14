@@ -41,13 +41,14 @@ class FindPath {
                      int curr_time,
                      double* action_ptr);
 
-        std::pair<int, int> ExecuteMultigoalAStar(
+        std::vector<std::pair<int, int>> ExecuteMultigoalAStar(
                      int robotposeX, 
                      int robotposeY,
                      int targetposeX,
                      int targetposeY,
                      int curr_time,
-                     double* action_ptr);
+                     double* action_ptr
+                     );
 
     private:
         // For map information
@@ -81,6 +82,7 @@ class FindPath {
         std::vector<std::pair<int, int>> AStarwith2DDijkstra(Node startNode, Node goalNode, int currTime, std::unordered_map<int, double>* pheuristicsTable);
         std::vector<std::pair<int, int>> AStarwithMultiBackwardDijkstra(Node startNode, Node goalNode, int currTime, std::vector<int> heuristics);        
         std::vector<std::pair<int, int>> MultigoalAStar(Node startNode, int currTime, int targetTime);
+        
         std::vector<Node*> GetOptimalPath(Node* pgoalNode);
 
         int GetNodeIndex(Node node); //CHECKED

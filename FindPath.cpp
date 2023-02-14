@@ -68,25 +68,31 @@ std::pair<int, int> FindPath::ExecuteAStar2DDijkstra(
      
 }
 
-std::pair<int, int> FindPath::ExecuteMultigoalAStar(
+std::vector<std::pair<int, int>> FindPath::ExecuteMultigoalAStar(
                      int robotposeX, 
                      int robotposeY,
                      int targetposeX,
                      int targetposeY,
                      int curr_time,
-                     double* action_ptr)
+                     double* action_ptr
+                     )
 {
     Node startNode(robotposeX, robotposeY, curr_time); 
     if (!IsCellValid(startNode)) {
         printf("NODE INVALID");
     }
     int targetTime = 240;
-    std::vector<std::pair<int, int>> path = MultigoalAStar(startNode, curr_time, targetTime);
+    int dT = 200;
+    
+    printf("get path and return the index one\n");
+    std::vector<std::pair<int,int>> path = MultigoalAStar(startNode, curr_time, targetTime);
+    
+    
     // printf("exits multigoalstar function\n");
-    std::pair<int, int> nextPose = std::make_pair(path[1].first, path[1].second);
+
     // printf("retrieves next pose from the path.\n");
     // printf("next pose x y: %d %d\n", nextPose.first, nextPose.second);
-    return nextPose;
+    return path;
 }
 
 std::vector<std::pair<int, int>> FindPath::AStarwith2DDijkstra(Node startNode, Node goalNode, int currTime, std::unordered_map<int, double>* pheuristicsTable)
@@ -274,15 +280,7 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
     //create a goallist
     for (int t=0; t<mtargetSteps;t++){
         Node* pgoalNode = new Node((int)mtargetTrajectory[t], (int)mtargetTrajectory[t+mtargetSteps], t);
-        // //MultigoalAstar - But this version doesn't have an imaginary goal
-        // //Thus, the below G, H, F value definition are not required.
-        // //Because my search will end once parent node index is equal to goal node index
-
-        // pgoalNode->SetHeuristics(0.0);
-        // pgoalNode->SetGValue(0.0);
-        // pgoalNode->SetFValue(ComputeFValue(pgoalNode->GetGValue(), pgoalNode->GetHeuristics(),0));
         goalList[GetNodeIndex(pgoalNode)] = pgoalNode;    
-
     }
     
     double weight = 1.0;    
@@ -313,7 +311,7 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
             // printf("ptargetgoal created.\n");
             
             if (GetNodeIndex(pparentNode) == GetNodeIndex(ptargetGoalNode)) {
-                // printf("parent meets goal\n");
+                printf("parent meets goal\n");
                 ptargetGoalNode->SetParent(pparentNode);
                 
                 Node* p = ptargetGoalNode->GetParent();
@@ -420,6 +418,8 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
 
     return path;
 }
+
+
 std::vector<Node*> FindPath::GetOptimalPath(Node* pgoalNode)
 {
     std::vector<Node*> path;
