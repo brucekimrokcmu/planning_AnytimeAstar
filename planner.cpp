@@ -23,8 +23,9 @@
 //1-based indexing in matlab (so, robotpose and goalpose are 1-indexed)
 #define GETMAPINDEX(X, Y, XSIZE, YSIZE) ((Y-1)*XSIZE + (X-1))
 static std::vector<std::pair<int, int>> g_path;
-static bool init = false;
-static int iter=2;
+static std::unordered_map<int, double> g_DHeuristics;
+static bool g_init = false;
+static int g_iter=2;
 
 static void planner(
         double*	map,
@@ -52,24 +53,30 @@ static void planner(
     // printf("goal: %d %d;\n", goalposeX, goalposeY);
     // printf("curr time: %d;\n", curr_time);
 
-    std::unique_ptr<FindPath> pathPlanner(new FindPath(map, collision_thresh, x_size, y_size, target_steps, target_traj));
-
-    if(!init) {
-        std::vector<std::pair<int, int>> path = pathPlanner->ExecuteMultigoalAStar(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);        
+    
+       
+    if(!g_init) {
+        // std::vector<std::pair<int, int>> path = pathPlanner->ExecuteMultigoalAStar(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);        
+        std::unique_ptr<FindPath> pathPlanner(new FindPath(map, collision_thresh, x_size, y_size, target_steps, target_traj));
+ 
+        std::vector<std::pair<int, int>> path = pathPlanner->ExecuteMultigoalAstarWithDijkstraHeuristics(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);        
+        printf("saving to g_path\n");
         g_path = path;    
+        printf("saved to g_path\n");
+;
+        for (int i=0; i<g_path.size(); i++){
+            printf("path[i] x y :%d %d %d\n", i, g_path[i].first, g_path[i].second);
+        }
         robotposeX = g_path[1].first;
         robotposeY = g_path[1].second;
-        // for (int i=0; i<g_path.size(); i++){
-        //     printf("path[i] x y :%d %d %d\n", i, g_path[i].first, g_path[i].second);
-        // }
-        init = true;
-    } else if (iter<g_path.size()){
+        g_init = true;
+    } else if (g_iter<g_path.size()){
         printf("init is now false\n");
         
-        robotposeX = g_path[iter].first;
-        robotposeY = g_path[iter].second;
+        robotposeX = g_path[g_iter].first;
+        robotposeY = g_path[g_iter].second;
         printf("next robot pose x y: %d %d\n", robotposeX, robotposeY);
-        iter++;
+        g_iter++;
         
     }
     
@@ -109,6 +116,9 @@ static void planner(
    */
 
 }
+
+
+
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray*prhs[])
 {

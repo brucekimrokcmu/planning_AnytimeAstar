@@ -2,8 +2,8 @@
 
 class Node{
     public:
-        // Node();
         Node(int poseX, int poseY, int currTime);
+        Node(int poseX, int poseY, int currTime, bool imGoal);
         
         int GetPoseX() const;
         int GetPoseY() const;
@@ -16,7 +16,9 @@ class Node{
         void SetHeuristics(const double val);
         double GetFValue() const;
         void SetFValue(const double val);
-        
+        double GetGoalCost() const;
+        void SetGoalCost(const double val);
+
         Node* GetParent() const;
         void SetParent(Node* pParent);
         
@@ -30,7 +32,10 @@ class Node{
         double mG;
         double mH;
         double mF;
+        double mGoalCost;
         // Backtracking 
         Node* mpParent;
+        // Imaginary goal
+        bool mIsImaginaryGoal;
  
 };

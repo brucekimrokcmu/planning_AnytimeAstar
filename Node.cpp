@@ -3,7 +3,14 @@
 
 Node::Node(int poseX, int poseY, int currTime) 
     : mX(poseX), mY(poseY), mT(currTime),
-    mF(0), mG(std::numeric_limits<double>::infinity()), mH(0), mpParent(nullptr)
+    mF(0), mG(std::numeric_limits<double>::infinity()), mH(0), mGoalCost(0),mpParent(nullptr)
+    // mF(0), mG(9999.0), mH(0), mpParent(nullptr)
+{        
+};
+
+Node::Node(int poseX, int poseY, int currTime, bool imGoal) 
+    : mX(poseX), mY(poseY), mT(currTime), mIsImaginaryGoal(false),
+    mF(0), mG(std::numeric_limits<double>::infinity()), mH(0), mGoalCost(0),mpParent(nullptr)
     // mF(0), mG(9999.0), mH(0), mpParent(nullptr)
 {        
 };
@@ -31,6 +38,12 @@ double Node::GetFValue() const {return mF;}
 void Node::SetFValue(const double val)
 {   
     mF = val;
+}
+
+double Node::GetGoalCost() const {return mGoalCost;}
+void Node::SetGoalCost(const double val)
+{
+    mGoalCost = val;
 }
 
 Node* Node::GetParent() const

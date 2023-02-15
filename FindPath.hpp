@@ -8,11 +8,13 @@
 #include <memory>
 #include <unordered_map>
 #include <queue>
+#include <stack>
 #include <vector>
 #include "FValueCompare.hpp"
 #include "Node.hpp"
 
-#define NUMOFDIRS 9
+
+#define NUMOFDIRS 8
 
 class FindPath {
     public:
@@ -22,7 +24,8 @@ class FindPath {
                  int x_size,
                  int y_size,
                  int target_steps,
-                 double* target_traj);
+                 double* target_traj
+                 );
         
 
         
@@ -33,13 +36,6 @@ class FindPath {
                      int curr_time,
                      double* action_ptr);                    
 
-        std::pair<int, int> ExecuteAStar2DDijkstra(
-                     int robotposeX, 
-                     int robotposeY,
-                     int targetposeX,
-                     int targetposeY,
-                     int curr_time,
-                     double* action_ptr);
 
         std::vector<std::pair<int, int>> ExecuteMultigoalAStar(
                      int robotposeX, 
@@ -50,6 +46,16 @@ class FindPath {
                      double* action_ptr
                      );
 
+        std::vector<std::pair<int, int>> ExecuteMultigoalAstarWithDijkstraHeuristics(
+                     int robotposeX, 
+                     int robotposeY,
+                     int targetposeX,
+                     int targetposeY,
+                     int curr_time,
+                     double* action_ptr
+                     );
+
+
     private:
         // For map information
         double *mmap;
@@ -58,12 +64,15 @@ class FindPath {
         int mySize;
         int mtargetSteps;
         double* mtargetTrajectory;
-        int mdX[NUMOFDIRS] = {-1, -1, -1,  0, 0,  0,  1, 1, 1};
-        int mdY[NUMOFDIRS] = {-1,  0,  1, -1, 0,  1, -1, 0, 1}; 
+        int mdX[NUMOFDIRS] = {-1, -1, -1,  0, 0,  1, 1, 1};
+        int mdY[NUMOFDIRS] = {-1,  0,  1, -1, 1, -1, 0, 1}; 
 
         bool mPlanningFlag;
         int mPathLength;
         int mPathIterator;
+
+        std::unordered_map<int, double> mDHeuristics;
+
 
         // Helper member variables such as flag, graph, path
         static std::unique_ptr<std::unordered_map<int, Node>> mpFullGraph;
@@ -79,21 +88,28 @@ class FindPath {
 
         // Algorithms
         std::vector<std::pair<int, int>> AStar(Node startNode, Node goalNode, int currTime);
-        std::vector<std::pair<int, int>> AStarwith2DDijkstra(Node startNode, Node goalNode, int currTime, std::unordered_map<int, double>* pheuristicsTable);
-        std::vector<std::pair<int, int>> AStarwithMultiBackwardDijkstra(Node startNode, Node goalNode, int currTime, std::vector<int> heuristics);        
+        std::vector<std::pair<int, int>> AStarwithMultiBackwardDijkstra(Node startNode, int currTime);        
         std::vector<std::pair<int, int>> MultigoalAStar(Node startNode, int currTime, int targetTime);
         
-        std::vector<Node*> GetOptimalPath(Node* pgoalNode);
 
+        std::vector<Node*> GetOptimalPath(Node* pgoalNode);
         int GetNodeIndex(Node node); //CHECKED
         int GetNodeIndex(Node* pnode);
         int GetIndexFromPose(int x, int y); //CHECKED
         bool IsCellValid(Node node); //CHECKED
         bool IsCellValid(Node* pnode); 
 
+
+        bool inline inBounds(int x, int y);
+        bool inline isCollisionFree(int idx);
+
+
+
+        std::unordered_map<int, double> ComputeBackwardDijkstra();
+
         double ComputeEuclideanHeuristics(Node node, Node goalNode); //CHECKED
         double ComputeEuclideanHeuristics(Node* pnode, Node* pgoalNode); //CHECKED
         double ComputeFValue(double gValue, double heuristics, double weight); //CHECKED
-        std::unordered_map<int, double> Get2DDijkstraHeuristicsTable(Node startNode, Node goalNode, int currTime); 
+        
         // int BackwardAStarforDijkstra(Node startNode, Node goalNode, int currTime);
 };
