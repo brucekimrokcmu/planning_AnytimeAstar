@@ -88,21 +88,25 @@ static void planner(
             robotposeY = g_path[1].second;
             g_init_plan = true;
             g_iter = 2;
-            printf("path returned\n");
+            // printf("path returned\n");
         } else if (g_iter<g_path.size()){
             robotposeX = g_path[g_iter].first;
             robotposeY = g_path[g_iter].second;
             
             g_iter++;
-            printf("iterate through path \n");
+            // printf("iterate through path \n");
         } else {
             robotposeX = g_path.back().first;
             robotposeY = g_path.back().second;
-            printf("staying at target\n");
-            printf("last x y: %d %d\n", robotposeX, robotposeY);
+            // printf("staying at target\n");
+            // printf("last x y: %d %d\n", robotposeX, robotposeY);
+            // printf("target by time x y : %d %d\n", (int)target_traj[g_target_time], (int)target_traj[(g_target_time+target_steps)] );
         }
+        // if (robotposeX == (int)target_traj[g_target_time] && robotposeY == (int)target_traj[(g_target_time+target_steps)]) {
+        //     printf("***********************************\n\n\n\n\n\n\n\n\n\n");
+        // }
 
-    } else {
+    } else { 
         g_target_time = std::min(curr_time+delta_time, target_steps-1);
         g_init_plan = false;
         if (g_iter<g_path.size()) {
@@ -112,10 +116,10 @@ static void planner(
         } else {
             robotposeX = g_path.back().first;
             robotposeY = g_path.back().second;
-            printf("target time > currtime  x, y : %d %d\n",robotposeX, robotposeY);
+            // printf("target time > currtime  x, y : %d %d\n",robotposeX, robotposeY);
         }
 
-        printf("reset time\n");
+        // printf("reset time\n");
     }
     // printf("g_target_time after: %d\n", g_target_time);
 

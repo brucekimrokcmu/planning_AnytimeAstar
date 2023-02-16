@@ -398,9 +398,10 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
             printf("parent meets goal\n");
             // printf("goal   node x y t: %d %d %d\n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
             Node* pgoalNode = new Node(targetGoalPose.first, targetGoalPose.second, pparentNode->GetCurrentTime());
-            pgoalNode->SetParent(pparentNode);
-            Node* p = pparentNode->GetParent();
+            // pgoalNode->SetParent(pparentNode);
             
+            // Node* p = pparentNode->GetParent();
+            Node* p = pparentNode;
             while (p != nullptr) {
                 path.push_back(std::make_pair(p->GetPoseX(), p->GetPoseY()));
                 // printf("reversed x y : %d %d \n", p->GetPoseX(), p->GetPoseY());
