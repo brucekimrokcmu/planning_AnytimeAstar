@@ -52,8 +52,8 @@ static void planner(
 
     // targetposeX = (int) target_traj[target_steps-1];
     // targetposeY = (int) target_traj[target_steps-1+target_steps];
-    printf("robot  x y t:%d %d %d;\n", robotposeX, robotposeY, curr_time);
-    printf("target x y t:%d %d %d;\n", targetposeX, targetposeY, curr_time);
+    // printf("robot  x y t:%d %d %d;\n", robotposeX, robotposeY, curr_time);
+    // printf("target x y t:%d %d %d;\n", targetposeX, targetposeY, curr_time);
     // printf("goal: %d %d;\n", goalposeX, goalposeY);
     // printf("curr time: %d;\n", curr_time);
     
@@ -65,7 +65,7 @@ static void planner(
         std::unordered_map<int, double> dijkstraHeuristics = pathPlanner->ComputeBackwardDijkstra();
         g_DHeuristics = dijkstraHeuristics;
         pg_DHueristics = &g_DHeuristics;
-        printf("heuristics run once\n");
+        // printf("heuristics run once\n");
         g_init_heur = true;
         g_target_time = (int) std::round(target_steps/2);
         delta_time =  (int) std::round((target_steps-curr_time)/2);

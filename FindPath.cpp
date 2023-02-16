@@ -92,7 +92,7 @@ std::vector<std::pair<int, int>> FindPath::ExecuteMultigoalAstarWithDijkstraHeur
     // printf("get path and return the index one\n");
     std::vector<std::pair<int,int>> path = AStarwithMultiBackwardDijkstra(startNode, curr_time, pg_DHueristics, target_time);
     
-    printf("exits multigoalstar function\n");
+    // printf("exits multigoalstar function\n");
 
     // printf("retrieves path.\n");
     // printf("next pose x y: %d %d\n", nextPose.first, nextPose.second);
@@ -372,9 +372,9 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
     std::pair<int, int> targetGoalPose = goalList[targetTime];
     // printf("ptargetgoal created.\n");
     // printf("goal x y t %d %d %d \n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
-    printf("target time: %d\n", targetTime);
-    printf("target_step: %d\n", mtargetSteps);
-    printf("targetgoalpose: x y: %d %d\n", targetGoalPose.first, targetGoalPose.second);
+    // printf("target time: %d\n", targetTime);
+    // printf("target_step: %d\n", mtargetSteps);
+    // printf("targetgoalpose: x y: %d %d\n", targetGoalPose.first, targetGoalPose.second);
 
     // printf("starting while loop!\n");
     while((!openList.empty())) {
@@ -395,7 +395,7 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
         // targetGoalPose = goalList[targetTime];
        
         if (GetNodeIndex(pparentNode) == GetIndexFromPose(targetGoalPose.first, targetGoalPose.second)) {
-            printf("parent meets goal\n");
+            // printf("parent meets goal\n");
             // printf("goal   node x y t: %d %d %d\n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
             Node* pgoalNode = new Node(targetGoalPose.first, targetGoalPose.second, pparentNode->GetCurrentTime());
             // pgoalNode->SetParent(pparentNode);
@@ -464,7 +464,7 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
         }                     
     }
 
-    printf("exists while loop because open list is empty\n");
+    // printf("exists while loop because open list is empty\n");
     // loop through closedlist, openlist, goallist and delete all elements    
 
     // for (auto i=goalList.begin(); i != goalList.end();i++){
@@ -503,7 +503,7 @@ bool inline isCollisionFree(int idx, int threshold, double* map)
 
 std::unordered_map<int, double> FindPath::ComputeBackwardDijkstra() 
 {
-    printf("D* run\n");
+    // printf("D* run\n");
     std::unordered_map<int, double> heuristicsTable;
     std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList;     
     std::unordered_map<int, Node*> closedList;
