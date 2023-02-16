@@ -356,7 +356,7 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
     }
     // printf("goal list saved\n");
     
-    double weight = 100.0;    
+    double weight = 50.0;    
     Node* pstartNode = new Node(startNode);
     pstartNode->SetGValue(0.0);
     // printf("start setting heuristics of the startnode\n");
@@ -364,6 +364,7 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
     // printf("I got it! it's %f\n", pstartNode->GetHeuristics());
     pstartNode->SetFValue(ComputeFValue(pstartNode->GetGValue(), pstartNode->GetHeuristics(), weight));
     openList.push(pstartNode); 
+    // printf("startnode x y t %d %d %d\n", pstartNode->GetPoseX(), pstartNode->GetPoseY(), pstartNode->GetCurrentTime());
     // printf("initialized pstartNode and pushed into openlist.\n");
     // check time -> extract goal from the trajectory
     // I can also check the elapsed time running AStar and add that to goal time.
@@ -371,9 +372,14 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
     std::pair<int, int> targetGoalPose = goalList[targetTime];
     // printf("ptargetgoal created.\n");
     // printf("goal x y t %d %d %d \n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
+    printf("target time: %d\n", targetTime);
+    printf("target_step: %d\n", mtargetSteps);
+    printf("targetgoalpose: x y: %d %d\n", targetGoalPose.first, targetGoalPose.second);
 
-    printf("starting while loop!\n");
+    // printf("starting while loop!\n");
     while((!openList.empty())) {
+        // printf("openlist size: %d\n", openList.size());
+
         Node* pparentNode = openList.top();  
         if(!IsCellValid(openList.top()))
             continue;
@@ -385,15 +391,16 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
 
         // check if parentnode == every single goal nodes along with time 
         // pparentnode.time <= goal time 
-        
-        targetGoalPose = goalList[targetTime];
-        
+        // printf("targetTime: %d", targetTime);
+        // targetGoalPose = goalList[targetTime];
+       
         if (GetNodeIndex(pparentNode) == GetIndexFromPose(targetGoalPose.first, targetGoalPose.second)) {
             printf("parent meets goal\n");
             // printf("goal   node x y t: %d %d %d\n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
             Node* pgoalNode = new Node(targetGoalPose.first, targetGoalPose.second, pparentNode->GetCurrentTime());
             pgoalNode->SetParent(pparentNode);
             Node* p = pparentNode->GetParent();
+            
             while (p != nullptr) {
                 path.push_back(std::make_pair(p->GetPoseX(), p->GetPoseY()));
                 // printf("reversed x y : %d %d \n", p->GetPoseX(), p->GetPoseY());
@@ -418,7 +425,7 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
             int newX = pparentNode->GetPoseX() + mdX[dir];
             int newY = pparentNode->GetPoseY() + mdY[dir];
             int newIndex = GetIndexFromPose(newX, newY);
-            
+
             if (!inBounds(newX, newY))
                 continue;
 

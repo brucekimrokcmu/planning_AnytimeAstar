@@ -28,7 +28,7 @@ static std::unordered_map<int, double>* pg_DHueristics;
 static bool g_init_heur = false;
 static bool g_init_plan = false;
 static int g_iter;
-static int target_time;
+static int g_target_time;
 static int delta_time;
 
 static void planner(
@@ -67,18 +67,22 @@ static void planner(
         pg_DHueristics = &g_DHeuristics;
         printf("heuristics run once\n");
         g_init_heur = true;
-        target_time = (int) std::round(target_steps/2);
+        g_target_time = (int) std::round(target_steps/2);
         delta_time =  (int) std::round((target_steps-curr_time)/2);
 
     }
-    // printf("target_time before: %d\n", target_time);
+    // printf("g_target_time before: %d\n", g_target_time);
     // printf("curr, target time : %d %d %d %d %d\n", curr_time, delta_time, curr_time+delta_time, target_steps, std::min(curr_time+delta_time, target_steps));
-    if (curr_time <= target_time) {
+    if (curr_time <= g_target_time) {
         if (!g_init_plan) {
-            std::vector<std::pair<int, int>> path = pathPlanner->ExecuteMultigoalAstarWithDijkstraHeuristics(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr, pg_DHueristics, target_time);        
+            std::vector<std::pair<int, int>> path = pathPlanner->ExecuteMultigoalAstarWithDijkstraHeuristics(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr, pg_DHueristics, g_target_time);        
             // printf("saving to g_path\n");
             g_path = path;    
             // printf("saved to g_path\n");
+            // for (int i=0; i<5;i++){
+            //     std::cout<< path[i].first << " " << path[i].second << '\n';
+            // }
+
 
             robotposeX = g_path[1].first;
             robotposeY = g_path[1].second;
@@ -99,7 +103,7 @@ static void planner(
         }
 
     } else {
-        target_time = std::min(curr_time+delta_time, target_steps);
+        g_target_time = std::min(curr_time+delta_time, target_steps-1);
         g_init_plan = false;
         if (g_iter<g_path.size()) {
             robotposeX = g_path[g_iter--].first;
@@ -113,7 +117,7 @@ static void planner(
 
         printf("reset time\n");
     }
-    // printf("target_time after: %d\n", target_time);
+    // printf("g_target_time after: %d\n", g_target_time);
 
     
     // std::pair<int, int> nextPose = pathPlanner->ExecuteAStar(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
