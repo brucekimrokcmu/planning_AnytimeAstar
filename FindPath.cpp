@@ -357,7 +357,7 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
     
     // printf("goal list saved\n");
     
-    double weight = mcollisionThresh/1.2;    
+    double weight = mcollisionThresh/1.5;    
     Node* pstartNode = new Node(startNode);
     pstartNode->SetGValue(0.0);
     // printf("start setting heuristics of the startnode\n");
