@@ -86,7 +86,7 @@ static void planner(
 
     // FindPath pathPlanner(map, collision_thresh, x_size, y_size, target_steps, target_traj);
     // std::pair<int, int> nextPose = pathPlanner.Execute(robotposeX, robotposeY, targetposeX, targetposeY, curr_time, action_ptr);
-    printf("returns the next pose\n");
+    // printf("returns the next pose\n");
     
 
     // robotposeX = nextPose.first;

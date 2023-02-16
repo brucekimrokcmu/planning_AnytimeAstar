@@ -369,10 +369,10 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
     // check time -> extract goal from the trajectory
     // I can also check the elapsed time running AStar and add that to goal time.
     
-    int targetTime = 100;
+    int targetTime = 150;
     Node* ptargetGoalNode = goalList[GetIndexFromPose((int)mtargetTrajectory[targetTime], (int)mtargetTrajectory[targetTime+mtargetSteps])];
     // printf("ptargetgoal created.\n");
-    
+    printf("goal x y t %d %d %d \n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
 
     // printf("starting while loop!\n");
     while((!openList.empty())) {
