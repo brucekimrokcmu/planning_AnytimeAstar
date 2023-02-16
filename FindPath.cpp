@@ -91,7 +91,7 @@ std::vector<std::pair<int, int>> FindPath::ExecuteMultigoalAstarWithDijkstraHeur
     // printf("get path and return the index one\n");
     std::vector<std::pair<int,int>> path = AStarwithMultiBackwardDijkstra(startNode, curr_time, pg_DHueristics);
     
-    // printf("exits multigoalstar function\n");
+    printf("exits multigoalstar function\n");
 
     // printf("retrieves path.\n");
     // printf("next pose x y: %d %d\n", nextPose.first, nextPose.second);
@@ -369,7 +369,7 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
     // check time -> extract goal from the trajectory
     // I can also check the elapsed time running AStar and add that to goal time.
     
-    int targetTime = 150;
+    int targetTime = 180;
     Node* ptargetGoalNode = goalList[GetIndexFromPose((int)mtargetTrajectory[targetTime], (int)mtargetTrajectory[targetTime+mtargetSteps])];
     // printf("ptargetgoal created.\n");
     printf("goal x y t %d %d %d \n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
@@ -379,7 +379,7 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
         Node* pparentNode = openList.top();  
         if(!IsCellValid(openList.top()))
             continue;
-        // printf("parent node x y t: %d %d %d\n", pparentNode->GetPoseX(), pparentNode->GetPoseY(), pparentNode->GetCurrentTime());
+        printf("parent node x y t: %d %d %d\n", pparentNode->GetPoseX(), pparentNode->GetPoseY(), pparentNode->GetCurrentTime());
         openList.pop();
         
         visitedList[GetNodeIndex(pparentNode)] = pparentNode;
@@ -392,8 +392,8 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
         
         
         if (GetNodeIndex(pparentNode) == GetNodeIndex(ptargetGoalNode)) {
-            // printf("parent meets goal\n");
-            // printf("goal   node x y t: %d %d %d\n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
+            printf("parent meets goal\n");
+            printf("goal   node x y t: %d %d %d\n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
             ptargetGoalNode->SetParent(pparentNode);
             Node* p = ptargetGoalNode->GetParent();
             while (p != nullptr) {
@@ -508,7 +508,6 @@ std::unordered_map<int, double> FindPath::ComputeBackwardDijkstra()
         pgoalNode->SetGValue(0.0);
         pgoalNode->SetFValue(pgoalNode->GetGValue());
         openList.push(pgoalNode);
-
     }
 
     double weight = 0.0;
