@@ -46,16 +46,19 @@ class FindPath {
                      double* action_ptr
                      );
 
+
+
         std::vector<std::pair<int, int>> ExecuteMultigoalAstarWithDijkstraHeuristics(
                      int robotposeX, 
                      int robotposeY,
                      int targetposeX,
                      int targetposeY,
                      int curr_time,
-                     double* action_ptr
+                     double* action_ptr,
+                     std::unordered_map<int, double>* pg_DHueristics
                      );
 
-
+        std::unordered_map<int, double> ComputeBackwardDijkstra();
     private:
         // For map information
         double *mmap;
@@ -71,7 +74,7 @@ class FindPath {
         int mPathLength;
         int mPathIterator;
 
-        std::unordered_map<int, double> mDHeuristics;
+        // std::unordered_map<int, double> mDHeuristics;
 
 
         // Helper member variables such as flag, graph, path
@@ -88,7 +91,7 @@ class FindPath {
 
         // Algorithms
         std::vector<std::pair<int, int>> AStar(Node startNode, Node goalNode, int currTime);
-        std::vector<std::pair<int, int>> AStarwithMultiBackwardDijkstra(Node startNode, int currTime);        
+        std::vector<std::pair<int, int>> AStarwithMultiBackwardDijkstra(Node startNode, int currTime, std::unordered_map<int, double>* pg_DHueristics);        
         std::vector<std::pair<int, int>> MultigoalAStar(Node startNode, int currTime, int targetTime);
         
 
@@ -104,8 +107,6 @@ class FindPath {
         bool inline isCollisionFree(int idx);
 
 
-
-        std::unordered_map<int, double> ComputeBackwardDijkstra();
 
         double ComputeEuclideanHeuristics(Node node, Node goalNode); //CHECKED
         double ComputeEuclideanHeuristics(Node* pnode, Node* pgoalNode); //CHECKED

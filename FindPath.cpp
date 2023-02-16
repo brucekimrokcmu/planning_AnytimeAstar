@@ -10,7 +10,7 @@ FindPath::FindPath(double* map,
 mxSize(x_size), mySize(y_size), mtargetSteps(target_steps),
 mtargetTrajectory(target_traj), mPlanningFlag(true), mPathLength(0), mPathIterator(0)
 {
-  mDHeuristics = ComputeBackwardDijkstra();   
+//   mDHeuristics = ComputeBackwardDijkstra();   
 };
 
 std::pair<int, int> FindPath::ExecuteAStar(
@@ -70,13 +70,16 @@ std::vector<std::pair<int, int>> FindPath::ExecuteMultigoalAStar(
     return path;
 }
 
+
+
 std::vector<std::pair<int, int>> FindPath::ExecuteMultigoalAstarWithDijkstraHeuristics(
                      int robotposeX, 
                      int robotposeY,
                      int targetposeX,
                      int targetposeY,
                      int curr_time,
-                     double* action_ptr
+                     double* action_ptr,
+                     std::unordered_map<int, double>* pg_DHueristics
                     )
 {
 
@@ -85,12 +88,12 @@ std::vector<std::pair<int, int>> FindPath::ExecuteMultigoalAstarWithDijkstraHeur
     // replan when targetTime < currTime
     
     Node startNode(robotposeX, robotposeY, curr_time); 
-    printf("get path and return the index one\n");
-    std::vector<std::pair<int,int>> path = AStarwithMultiBackwardDijkstra(startNode, curr_time);
+    // printf("get path and return the index one\n");
+    std::vector<std::pair<int,int>> path = AStarwithMultiBackwardDijkstra(startNode, curr_time, pg_DHueristics);
     
     // printf("exits multigoalstar function\n");
 
-    printf("retrieves path.\n");
+    // printf("retrieves path.\n");
     // printf("next pose x y: %d %d\n", nextPose.first, nextPose.second);
     // for (int i=0; i<path.size(); i++){
     //         printf("path[i] x y :%d %d %d\n", i, path[i].first, path[i].second);
@@ -339,7 +342,7 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
     return path;
 }
 
-std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node startNode, int currTime)
+std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node startNode, int currTime, std::unordered_map<int, double>* pg_DHueristics)
 {
     std::vector<std::pair<int, int>> path;
     std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
@@ -354,11 +357,11 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
     }
     // printf("goal list saved\n");
     
-    double weight = 200.0;    
+    double weight = 50.0;    
     Node* pstartNode = new Node(startNode);
     pstartNode->SetGValue(0.0);
     // printf("start setting heuristics of the startnode\n");
-    pstartNode->SetHeuristics(mDHeuristics[GetNodeIndex(pstartNode)]);
+    pstartNode->SetHeuristics((*pg_DHueristics)[GetNodeIndex(pstartNode)]);
     // printf("I got it! it's %f\n", pstartNode->GetHeuristics());
     pstartNode->SetFValue(ComputeFValue(pstartNode->GetGValue(), pstartNode->GetHeuristics(), weight));
     openList.push(pstartNode); 
@@ -366,17 +369,17 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
     // check time -> extract goal from the trajectory
     // I can also check the elapsed time running AStar and add that to goal time.
     
-    int targetTime = 500;
+    int targetTime = 100;
     Node* ptargetGoalNode = goalList[GetIndexFromPose((int)mtargetTrajectory[targetTime], (int)mtargetTrajectory[targetTime+mtargetSteps])];
-    printf("ptargetgoal created.\n");
+    // printf("ptargetgoal created.\n");
     
 
-    printf("starting while loop!\n");
+    // printf("starting while loop!\n");
     while((!openList.empty())) {
         Node* pparentNode = openList.top();  
         if(!IsCellValid(openList.top()))
             continue;
-        printf("parent node x y t: %d %d %d\n", pparentNode->GetPoseX(), pparentNode->GetPoseY(), pparentNode->GetCurrentTime());
+        // printf("parent node x y t: %d %d %d\n", pparentNode->GetPoseX(), pparentNode->GetPoseY(), pparentNode->GetCurrentTime());
         openList.pop();
         
         visitedList[GetNodeIndex(pparentNode)] = pparentNode;
@@ -389,13 +392,13 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
         
         
         if (GetNodeIndex(pparentNode) == GetNodeIndex(ptargetGoalNode)) {
-            printf("parent meets goal\n");
-            printf("goal   node x y t: %d %d %d\n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
+            // printf("parent meets goal\n");
+            // printf("goal   node x y t: %d %d %d\n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
             ptargetGoalNode->SetParent(pparentNode);
             Node* p = ptargetGoalNode->GetParent();
             while (p != nullptr) {
                 path.push_back(std::make_pair(p->GetPoseX(), p->GetPoseY()));
-                printf("reversed x y : %d %d \n", p->GetPoseX(), p->GetPoseY());
+                // printf("reversed x y : %d %d \n", p->GetPoseX(), p->GetPoseY());
                 p = p->GetParent();    
             }
             std::reverse(path.begin(), path.end());
@@ -408,7 +411,7 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
                 delete openList.top();
                 openList.pop();
             }
-            printf("exist while loop because parent is found;\n");
+            // printf("exist while loop because parent is found;\n");
             break;// printf("Not visited\n");
         }    
 
@@ -424,9 +427,9 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
                 continue;
             
             Node* psuccNode = new Node(newX, newY, currTime+1);   
-            printf("psucc node x y t: %d %d %d;\n", psuccNode->GetPoseX(), psuccNode->GetPoseY(), psuccNode->GetCurrentTime());
+            // printf("psucc node x y t: %d %d %d;\n", psuccNode->GetPoseX(), psuccNode->GetPoseY(), psuccNode->GetCurrentTime());
                            
-            psuccNode->SetHeuristics(mDHeuristics[GetNodeIndex(psuccNode)]);                
+            psuccNode->SetHeuristics((*pg_DHueristics)[GetNodeIndex(psuccNode)]);                
             if (visitedList.find(newIndex) != visitedList.end()){ // If visited                     
                 // printf("Visited.\n");
                 if (closedList.find(newIndex) == closedList.end()){  //If inside the closde list
@@ -438,7 +441,7 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
                         psuccNode->SetParent(pparentNode);
                         openList.push(psuccNode);  
                         visitedList[newIndex] = psuccNode; 
-                        printf("updated visited list and pushed to openlist.\n\n");                  
+                        // printf("updated visited list and pushed to openlist.\n\n");                  
                     } 
                         
                 } 
@@ -449,18 +452,18 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
                 psuccNode->SetFValue(ComputeFValue(psuccNode->GetGValue(), psuccNode->GetHeuristics(), weight));                
                 psuccNode->SetParent(pparentNode);
                 openList.push(psuccNode);                                         
-                printf("pushed to open list.\n\n");                                                     
+                // printf("pushed to open list.\n\n");                                                     
             }                        
         }                     
     }
 
-    printf("exists while loop because open list is empty\n");
+    // printf("exists while loop because open list is empty\n");
     // loop through closedlist, openlist, goallist and delete all elements    
 
     for (auto i=goalList.begin(); i != goalList.end();i++){
         delete i->second;
     }
-    printf("goal list is deleted\n");
+    // printf("goal list is deleted\n");
 
    for (auto i=closedList.begin(); i != closedList.end();i++){
         delete i->second;
@@ -469,7 +472,7 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
     // for (auto i=visitedList.begin(); i != visitedList.end();i++) {
     //     delete i->second;
     // }
-    printf("visited list is deleted\n");
+    // printf("visited list is deleted\n");
 
 
     return path;
