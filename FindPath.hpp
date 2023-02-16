@@ -55,7 +55,8 @@ class FindPath {
                      int targetposeY,
                      int curr_time,
                      double* action_ptr,
-                     std::unordered_map<int, double>* pg_DHueristics
+                     std::unordered_map<int, double>* pg_DHueristics,
+                     int target_time                     
                      );
 
         std::unordered_map<int, double> ComputeBackwardDijkstra();
@@ -91,7 +92,7 @@ class FindPath {
 
         // Algorithms
         std::vector<std::pair<int, int>> AStar(Node startNode, Node goalNode, int currTime);
-        std::vector<std::pair<int, int>> AStarwithMultiBackwardDijkstra(Node startNode, int currTime, std::unordered_map<int, double>* pg_DHueristics);        
+        std::vector<std::pair<int, int>> AStarwithMultiBackwardDijkstra(Node startNode, int currTime, std::unordered_map<int, double>* pg_DHueristics, int targetTime);        
         std::vector<std::pair<int, int>> MultigoalAStar(Node startNode, int currTime, int targetTime);
         
 

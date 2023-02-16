@@ -79,7 +79,8 @@ std::vector<std::pair<int, int>> FindPath::ExecuteMultigoalAstarWithDijkstraHeur
                      int targetposeY,
                      int curr_time,
                      double* action_ptr,
-                     std::unordered_map<int, double>* pg_DHueristics
+                     std::unordered_map<int, double>* pg_DHueristics,
+                     int target_time            
                     )
 {
 
@@ -89,7 +90,7 @@ std::vector<std::pair<int, int>> FindPath::ExecuteMultigoalAstarWithDijkstraHeur
     
     Node startNode(robotposeX, robotposeY, curr_time); 
     // printf("get path and return the index one\n");
-    std::vector<std::pair<int,int>> path = AStarwithMultiBackwardDijkstra(startNode, curr_time, pg_DHueristics);
+    std::vector<std::pair<int,int>> path = AStarwithMultiBackwardDijkstra(startNode, curr_time, pg_DHueristics, target_time);
     
     printf("exits multigoalstar function\n");
 
@@ -342,18 +343,16 @@ std::vector<std::pair<int, int>> FindPath::MultigoalAStar(Node startNode, int cu
     return path;
 }
 
-std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node startNode, int currTime, std::unordered_map<int, double>* pg_DHueristics)
+std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node startNode, int currTime, std::unordered_map<int, double>* pg_DHueristics, int targetTime)
 {
     std::vector<std::pair<int, int>> path;
     std::priority_queue<Node*, std::vector<Node*>, FValueCompare> openList; 
     std::unordered_map<int, Node*> closedList;
-    std::unordered_map<int, Node*> goalList;     
+    std::unordered_map<int, std::pair<int, int>> goalList;     
     std::unordered_map<int, Node*> visitedList;
     //create a goallist
     for (int t=0; t<mtargetSteps;t++){
-        Node* pgoalNode = new Node((int)mtargetTrajectory[t], (int)mtargetTrajectory[t+mtargetSteps], t);
-        goalList[GetNodeIndex(pgoalNode)] = pgoalNode;    
-    
+        goalList[t] = std::make_pair((int)mtargetTrajectory[t], (int)mtargetTrajectory[t+mtargetSteps]);    
     }
     // printf("goal list saved\n");
     
@@ -369,17 +368,16 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
     // check time -> extract goal from the trajectory
     // I can also check the elapsed time running AStar and add that to goal time.
     
-    int targetTime = mtargetSteps/2;
-    Node* ptargetGoalNode = goalList[GetIndexFromPose((int)mtargetTrajectory[targetTime], (int)mtargetTrajectory[targetTime+mtargetSteps])];
+    std::pair<int, int> targetGoalPose = goalList[targetTime];
     // printf("ptargetgoal created.\n");
-    printf("goal x y t %d %d %d \n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
+    // printf("goal x y t %d %d %d \n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
 
-    // printf("starting while loop!\n");
+    printf("starting while loop!\n");
     while((!openList.empty())) {
         Node* pparentNode = openList.top();  
         if(!IsCellValid(openList.top()))
             continue;
-        printf("parent node x y t: %d %d %d\n", pparentNode->GetPoseX(), pparentNode->GetPoseY(), pparentNode->GetCurrentTime());
+        // printf("parent node x y t: %d %d %d\n", pparentNode->GetPoseX(), pparentNode->GetPoseY(), pparentNode->GetCurrentTime());
         openList.pop();
         
         visitedList[GetNodeIndex(pparentNode)] = pparentNode;
@@ -387,19 +385,15 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
 
         // check if parentnode == every single goal nodes along with time 
         // pparentnode.time <= goal time 
-        currTime = pparentNode->GetCurrentTime();
         
-        if (currTime > targetTime) {
-            targetTime = currTime + (int)pparentNode->GetHeuristics();
-            ptargetGoalNode = goalList[GetIndexFromPose((int)mtargetTrajectory[targetTime], (int)mtargetTrajectory[targetTime+mtargetSteps])];
-        }
+        targetGoalPose = goalList[targetTime];
         
-        
-        if (GetNodeIndex(pparentNode) == GetNodeIndex(ptargetGoalNode)) {
+        if (GetNodeIndex(pparentNode) == GetIndexFromPose(targetGoalPose.first, targetGoalPose.second)) {
             printf("parent meets goal\n");
-            printf("goal   node x y t: %d %d %d\n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
-            ptargetGoalNode->SetParent(pparentNode);
-            Node* p = ptargetGoalNode->GetParent();
+            // printf("goal   node x y t: %d %d %d\n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
+            Node* pgoalNode = new Node(targetGoalPose.first, targetGoalPose.second, pparentNode->GetCurrentTime());
+            pgoalNode->SetParent(pparentNode);
+            Node* p = pparentNode->GetParent();
             while (p != nullptr) {
                 path.push_back(std::make_pair(p->GetPoseX(), p->GetPoseY()));
                 // printf("reversed x y : %d %d \n", p->GetPoseX(), p->GetPoseY());
@@ -416,6 +410,7 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
                 openList.pop();
             }
             // printf("exist while loop because parent is found;\n");
+            delete pgoalNode;
             break;// printf("Not visited\n");
         }    
 
@@ -461,12 +456,12 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
         }                     
     }
 
-    // printf("exists while loop because open list is empty\n");
+    printf("exists while loop because open list is empty\n");
     // loop through closedlist, openlist, goallist and delete all elements    
 
-    for (auto i=goalList.begin(); i != goalList.end();i++){
-        delete i->second;
-    }
+    // for (auto i=goalList.begin(); i != goalList.end();i++){
+    //     delete i->second;
+    // }
     // printf("goal list is deleted\n");
 
    for (auto i=closedList.begin(); i != closedList.end();i++){
