@@ -68,8 +68,8 @@ static void planner(
         pg_DHueristics = &g_DHeuristics;
         // printf("heuristics run once\n");
         g_init_heur = true;
-        g_target_time = (int) std::round(2*target_steps/3);
-        delta_time =  (int) std::round((target_steps-curr_time)/2);
+        g_target_time = (int) std::round(target_steps/2);
+        delta_time =  (int) std::round((target_steps-curr_time)*0.05);
 
     }
     // printf("g_target_time before: %d\n", g_target_time);
