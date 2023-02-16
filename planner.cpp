@@ -91,14 +91,20 @@ static void planner(
             g_iter = 2;
             // printf("path returned\n");
         } else if (g_iter<g_path.size()){
-            robotposeX = g_path[g_iter].first;
+            robotposeX = g_path[g_iter].first; 
             robotposeY = g_path[g_iter].second;
             
             g_iter++;
             // printf("iterate through path \n");
         } else {
-            robotposeX = g_path.back().first;
-            robotposeY = g_path.back().second;
+            g_target_time--;
+            robotposeX = target_traj[g_target_time];
+            robotposeY = target_traj[g_target_time+target_steps];
+            
+            // robotposeX = g_path.back().first;
+            // robotposeY = g_path.back().second;
+            // INSTEAD OF WAITING, BACK TRACK by using trajectory and decrement by time
+
             // printf("staying at target\n");
             // printf("last x y: %d %d\n", robotposeX, robotposeY);
             
