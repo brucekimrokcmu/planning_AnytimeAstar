@@ -398,7 +398,7 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
         if (GetNodeIndex(pparentNode) == GetIndexFromPose(targetGoalPose.first, targetGoalPose.second)) {
             // printf("parent meets goal\n");
             // printf("goal   node x y t: %d %d %d\n", ptargetGoalNode->GetPoseX(), ptargetGoalNode->GetPoseY(), ptargetGoalNode->GetCurrentTime());
-            Node* pgoalNode = new Node(targetGoalPose.first, targetGoalPose.second, pparentNode->GetCurrentTime());
+            Node* pgoalNode = new Node(targetGoalPose.first, targetGoalPose.second, pparentNode->GetCurrentTime()+1);
             // pgoalNode->SetParent(pparentNode);
             
             // Node* p = pparentNode->GetParent();
@@ -512,12 +512,12 @@ std::unordered_map<int, double> FindPath::ComputeBackwardDijkstra()
 
     for (int t=0; t<mtargetSteps;t++){
         Node* pgoalNode = new Node((int)mtargetTrajectory[t], (int)mtargetTrajectory[t+mtargetSteps], t);
-        pgoalNode->SetCurrentTime(t);
+        pgoalNode->SetCurrentTime(0);
         pgoalNode->SetGValue(0.0);
         pgoalNode->SetFValue(pgoalNode->GetGValue());
         openList.push(pgoalNode);
     }
-
+    int t = 0;
     double weight = 0.0;
     
     while((!openList.empty())) {
@@ -525,6 +525,7 @@ std::unordered_map<int, double> FindPath::ComputeBackwardDijkstra()
         // printf("closed list size: %d\n", closedList.size());
 
         Node* pparentNode = openList.top();
+        t = pparentNode->GetCurrentTime();
 
         if(!IsCellValid(openList.top()))
             continue;
@@ -546,7 +547,7 @@ std::unordered_map<int, double> FindPath::ComputeBackwardDijkstra()
             if (!isCollisionFree(newIndex))
                 continue;
             
-            Node* psuccNode = new Node(newX, newY, 0);
+            Node* psuccNode = new Node(newX, newY, t+1);
                                 
             psuccNode->SetHeuristics(0.0);                
             if (visitedList.find(newIndex) != visitedList.end()){ // If visited                     
