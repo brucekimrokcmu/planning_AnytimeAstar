@@ -354,6 +354,7 @@ std::vector<std::pair<int, int>> FindPath::AStarwithMultiBackwardDijkstra(Node s
     for (int t=0; t<mtargetSteps;t++){
         goalList[t] = std::make_pair((int)mtargetTrajectory[t], (int)mtargetTrajectory[t+mtargetSteps]);    
     }
+    
     // printf("goal list saved\n");
     
     double weight = mcollisionThresh/2;    

@@ -56,6 +56,7 @@ static void planner(
     // printf("target x y t:%d %d %d;\n", targetposeX, targetposeY, curr_time);
     // printf("goal: %d %d;\n", goalposeX, goalposeY);
     // printf("curr time: %d;\n", curr_time);
+    // printf("target by time x y : %d %d\n", (int)target_traj[g_target_time], (int)target_traj[(g_target_time+target_steps)] );
     
     std::unique_ptr<FindPath> pathPlanner(new FindPath(map, collision_thresh, x_size, y_size, target_steps, target_traj));       
 
@@ -100,7 +101,7 @@ static void planner(
             robotposeY = g_path.back().second;
             // printf("staying at target\n");
             // printf("last x y: %d %d\n", robotposeX, robotposeY);
-            // printf("target by time x y : %d %d\n", (int)target_traj[g_target_time], (int)target_traj[(g_target_time+target_steps)] );
+            
         }
         // if (robotposeX == (int)target_traj[g_target_time] && robotposeY == (int)target_traj[(g_target_time+target_steps)]) {
         //     printf("***********************************\n\n\n\n\n\n\n\n\n\n");
