@@ -74,8 +74,7 @@ while (true)
     
     targetpos = targettraj(time, :);
     numofmoves = numofmoves + 1;
-    % old cost calculation
-%     pathcost = pathcost + envmap(robotpos(1), robotpos(2));
+
     % add cost proportional to time spent planning
     pathcost = pathcost + movetime*envmap(robotpos(1), robotpos(2));
     robotpos = newrobotpos;
